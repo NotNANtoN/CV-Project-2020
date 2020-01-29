@@ -5,8 +5,8 @@ import wave
 import struct
 
 sample_rate = 44100
-duration = 5
-freq = 440
+duration = 1
+freq = 340
 
 def save_wave(file_name, audio, rate):
     wave_file=wave.open(file_name,"w")

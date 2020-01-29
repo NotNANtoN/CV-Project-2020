@@ -2,19 +2,30 @@
 
 import openal
 import time
+import pyautogui
+
+volume_factor = 0.02
+pitch_factor = 0.001
 
 source = openal.oalOpen("sound.wav")
-
-source.set_pitch(1)
-source.set_gain(1)
 source.play()
 
-position_x = -5
+[mouse_x, mouse_y] = pyautogui.position()
 
-while source.get_state() == openal.AL_PLAYING:
-    position_x += .1
-    source.set_position([position_x, 0, 0])
-    time.sleep(0.05)
-    print("Position X: {:.2f}".format(position_x))
+while True:
+    
+    [curr_x, curr_y] = pyautogui.position()
+    
+    relative_x, relative_y = curr_x - mouse_x, curr_y - mouse_y
+    
+    source.set_position([relative_x * volume_factor, relative_y * volume_factor, 0])
+    source.set_pitch(1 + (abs(relative_x) + abs(relative_y)) * pitch_factor)
+    
+    time.sleep(0.01)
+    
+    print("X: {}, Y: {}".format(relative_x, relative_y))
+
+    if source.get_state() != openal.AL_PLAYING:
+        source.play()
 
 openal.oalQuit()
