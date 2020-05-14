@@ -1,1 +1,42 @@
 # CV-Project-2020
+
+## General system
+### Overview:
+We have these main sub-systems to finally produce a 3D sound based on an image stream:
+1. Object detection - using Yolov3 or Mask-RCNN to detect the bounding box of the object.
+2. Depth estimation - use SLAM or pretrained monocular depth estimation in combination with bounding box to find 3D location of the object.
+3. Sound creation - given x,y,z coordinate play a 3D sound relative to the current position of the camera
+### How to use:
+Run the `auralize.py` script. It will take the camera feed as an input and show as an input the observed image with marked objects, along with a stereo sound signal indicating the distance to the object.
+### System evaluation:
+1. Speed: The faster the better. We need to evaluate how many FPS our system is required to be able to process to be useful.
+2. Accuracy: The more accurate the better if the system is still fast enough. Also here we need to find a way of how much inprecision in the x,y domain and in the depth domain is acceptable to still handle the target objects.
+3. Requirements: The fewer the better. Ideally this system should be useable with a monocular RGB camera and stereo headphones only.
+### Data
+We decided on the YCB video dataset. (TODO: which object classes? All of them?)
+### Camera calibration
+To localize an object more precisely it would help to calibrate the camera before use. For this we need to write a script still.
+
+## Object detection:
+### Overview:
+Given an RGB image (and potentially an object class) returns either all bounding boxes or only the bounding boxes of the given object class.
+### System evaluation:
+We need to evaluate inference speed and classification metrics. For classification it matters if the correct objects is detected and how precisely it is detected. The former is more important than the latter as the precise location might self-correct in later video frames.
+### Issues:
+We need to decide:
+  1. Yolov3 (speed) vs Mask-RCNN (accuracy)
+  2. Which pretrained weights to use (what dataset was the model trained on, which classes?)
+  3. Whether we fine-tune on YCB data or not.
+  
+## Depth estimation:
+### Overview:
+To estimate depth we can either use monocular depth estimation or try to build 3D map of all detected features using SLAM.
+### Monocular Depth Estimation
+placeholder
+### SLAM
+After getting it to compile, we need to check whether our YCB test objects
+
+## Sound creation:
+### Overview:
+Given a x,y,z values for the distance to the center of an object, return
+
