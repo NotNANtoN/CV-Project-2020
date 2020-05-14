@@ -1,3 +1,9 @@
+utils/calibration/outputs
+utils/calibration/calib_images
+utils/calibration/__pycache__
+*.avi
+Seminar/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
