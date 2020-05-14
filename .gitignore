@@ -1,4 +1,4 @@
-utils/calibration/outputs
+utils/calibration/output
 utils/calibration/calib_images
 utils/calibration/__pycache__
 *.avi
