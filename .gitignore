@@ -135,4 +135,5 @@ dmypy.json
 .pyre/
 
 # weight files
-.h5
+<<<<<<< HEAD
+*.h5
