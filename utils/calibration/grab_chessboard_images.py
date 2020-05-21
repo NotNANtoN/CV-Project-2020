@@ -1,24 +1,16 @@
 import sys
 import os 
-import cv2
 import time
 from datetime import datetime
+
+import cv2
+
 from webcam import Webcam
 
-import sys
-sys.path.append("../")
 
-
-os.makedirs("./calib_images", exist_ok=True)
-
-# CHESSBOARD SIZE
-chessboard_size = (11,7)
-
-# grab an image every 
-kSaveImageDeltaTime = 1  # second
-
-if __name__ == "__main__":
-
+def take_imgs(chessboard_size=(11,7), kSaveImageDeltaTime=1):
+    sys.path.append("../")
+    os.makedirs("./calib_images", exist_ok=True)
     camera_num = 0
     if len(sys.argv) == 2:
             camera_num = int(sys.argv[1])
@@ -65,4 +57,8 @@ if __name__ == "__main__":
             break    
         
     #webcam.quit()            
+
+
+if __name__ == "__main__":
+    take_imgs()
 

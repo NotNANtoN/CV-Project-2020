@@ -33,7 +33,7 @@ class Webcam(object):
                 if q.full():
                     old_frame = self.q.get()
                 self.q.put(self.current_frame)
-                print('q.size: ', self.q.qsize())           
+                #print('q.size: ', self.q.qsize())           
         time.sleep(0.005)
                   
     # get the current frame
