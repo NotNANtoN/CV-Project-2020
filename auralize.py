@@ -21,7 +21,7 @@ cam.start()
 
 while True:
     frame = cam.get_current_frame()
-    #process_frame(frame)
+    process_frame(frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -60,7 +60,7 @@ def process_frame(frame):
 
     if out_boxes:
         object_position = get_position_bbox(yolo_image, out_boxes)
-        
+
         audio.play()
         audio.set_position(object_position)
 
