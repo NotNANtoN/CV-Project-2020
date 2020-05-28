@@ -18,6 +18,7 @@ class Audio():
             self.source.play()
 
     def set_position(self, position):
+        position = [x * self.volume_factor for x in position]
         self.source.set_position(position)
 
         # Calculate angle between object and camera

@@ -40,5 +40,8 @@ class Webcam(object):
     def get_current_frame(self):
         img = None 
         while not self.q.empty():  # get last available image
-            img = self.q.get()         
+            img = self.q.get()  
+            img = np.array(img)
+            img = Image.fromarray(frame, 'RGB')
+
         return img
