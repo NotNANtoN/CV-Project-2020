@@ -15,9 +15,9 @@ def estimate(camera_matrix, depth_image, bounding_box):
     yv = np.arange(height)
     X, Y = np.meshgrid(xv, yv)
 
-    x = ( (X - cx) * dep / fx )
-    y = ( (Y - cy) * dep / fy )
-    xyz = np.stack([x,y,dep], axis=2)
+    x = ( (X - cx) * depth_image / fx )
+    y = ( (Y - cy) * depth_image / fy )
+    xyz = np.stack([x,y,depth_image], axis=2)
 
     box_x, box_y, box_w, box_h = bounding_box
     
