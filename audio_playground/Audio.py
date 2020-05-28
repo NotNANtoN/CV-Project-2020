@@ -4,8 +4,7 @@ import openal
 import numpy as np
 
 class Audio():
-
-    def __init__(self, wavefile, volume_factor=0.02, pitch_factor=0.001, base_pitch=1):
+    def __init__(self, wavefile, volume_factor=0.2, pitch_factor=0.01, base_pitch=1):
         self.source = openal.oalOpen(wavefile)
         self.volume_factor = volume_factor
         self.pitch_factor = pitch_factor
@@ -22,7 +21,7 @@ class Audio():
         self.source.set_position(position)
 
         # Calculate angle between object and camera
-        angle = self.angle([x, y, z], [0, 0, 1])
+        angle = self.angle(position, [0, 0, 1])
 
         pitch = self.base_pitch + angle * self.pitch_factor
         self.source.set_pitch(pitch)

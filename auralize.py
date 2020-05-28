@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from PIL import Image
 
 from calibration.webcam import Webcam
 from object_detection.detect_bananas import YOLO
@@ -11,6 +12,7 @@ def process_frame(frame):
     # Feed camera feed into object detection algorithm to get bounding boxes
     # Show bounding boxes in feed
     yolo_image, out_boxes, out_scores = yolo.detect_image(frame)
+    yolo_image = np.array(yolo_image)
     
     #yolo_image.save(dir_output + '/yolo_' + file_img)
                     
@@ -18,7 +20,8 @@ def process_frame(frame):
     #    top, left, bottom, right = out_boxes[i]
     #    file_detections.write('Banana {} in {}: Top: {}, Left: {}, Bottom: {}, Right: {}, Confidence: {}\n'.format(i+1, file_img, top, left, bottom, right, out_scores[i]))
         
-    cv2.imshow(yolo_image)
+    
+    cv2.imshow("Yolo processed image", yolo_image)
 
     # METHOD 1 - Depth estimation:
     # Feed camera feed into monocular depth estimation algorithm and get depth map
@@ -80,9 +83,10 @@ cam.start()
 while True:
     frame = cam.get_current_frame()
     if frame is not None:
-        print(type(frame))
-        print(frame.shape)
-        frame = np.array(frame)
+        #print(type(frame))
+        #print(frame.shape)
+        frame = Image.fromarray(frame, 'RGB')
+        #frame = np.array(frame)
         process_frame(frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
             break

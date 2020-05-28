@@ -130,7 +130,7 @@ class YOLO(object):
 
         #print('Found {} banana(s)'.format(len(out_boxes)))
 
-        font = ImageFont.truetype(font='keras_yolo3/font/FiraMono-Medium.otf',
+        font = ImageFont.truetype(font='object_detection/keras_yolo3/font/FiraMono-Medium.otf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
         thickness = (image.size[0] + image.size[1]) // 300
 
