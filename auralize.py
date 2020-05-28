@@ -3,6 +3,7 @@ import cv2
 
 from calibration.webcam import Webcam
 from object_detection.detect_bananas import YOLO
+from audio_playground.Audio import Audio
 # Read intrinsic camera parameters, if none detected prompt calibration.
 #try:
 camera_matrix = np.load("calibration/camera_matrix.npy")
@@ -12,6 +13,7 @@ dist_coefs = np.load("calibration/dist_coefs.npy")
 # Instantiate all algorithms
 cam = Webcam()
 yolo = YOLO("object_detection")  # assumes YOLO model weights are downloaded! (see keras yolo readme)
+audio = Audio("audio_playground/sound.wav")
 
 # Create Camera object
 # Get camera feed from camera object
@@ -19,7 +21,7 @@ cam.start()
 
 while True:
     frame = cam.get_current_frame()
-    process_frame(frame)
+    #process_frame(frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -48,8 +50,33 @@ def process_frame(frame):
     # Mark features that can be seen from current frame and that are within bounding box as relating to the object
     # Get coordinates of the feature group that is closest and/or has the highest density of detected features for the sought object
 
+    # METHOD 3 -
+    # Calculate center of detected bbox relative to camera center
+    # Those coordinates will represent x and y of the current 3D position (with fixed z value)
+
+
     # FINAL:
     # Give coordinate of object to auralizer to create sound.
+
+    if out_boxes:
+        object_position = get_position_bbox(yolo_image, out_boxes)
+        
+        audio.play()
+        audio.set_position(object_position)
+
+def get_position_bbox(img, out_boxes):
+    top, left, bottom, right = out_boxes[0]
+    center_x = (right - left) / 2 + left
+    center_y = (bottom - top) / 2 + top
+
+    im_width, im_height, _ = img.shape
+
+    pos_x = center_x - im_width / 2
+    pos_y = center_y - im_height / 2
+    pos_z = 1
+
+    return [pos_x, pos_y, pos_z]
+
 
 
 
