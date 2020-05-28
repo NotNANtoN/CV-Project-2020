@@ -5,26 +5,7 @@ from calibration.webcam import Webcam
 from object_detection.detect_bananas import YOLO
 from audio_playground.Audio import Audio
 from depth2coords import depth2coords
-# Read intrinsic camera parameters, if none detected prompt calibration.
-#try:
-camera_matrix = np.load("calibration/camera_matrix.npy")
-dist_coefs = np.load("calibration/dist_coefs.npy")
 
-
-# Instantiate all algorithms
-cam = Webcam()
-yolo = YOLO("object_detection")  # assumes YOLO model weights are downloaded! (see keras yolo readme)
-audio = Audio("audio_playground/sound.wav")
-
-# Create Camera object
-# Get camera feed from camera object
-cam.start()
-
-while True:
-    frame = cam.get_current_frame()
-    process_frame(frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
 
 def process_frame(frame):
     # Feed camera feed into object detection algorithm to get bounding boxes
@@ -36,7 +17,6 @@ def process_frame(frame):
     #for i in range(len(out_boxes)): 
     #    top, left, bottom, right = out_boxes[i]
     #    file_detections.write('Banana {} in {}: Top: {}, Left: {}, Bottom: {}, Right: {}, Confidence: {}\n'.format(i+1, file_img, top, left, bottom, right, out_scores[i]))
-        
         
     cv2.imshow(yolo_image)
 
@@ -80,6 +60,33 @@ def get_position_bbox(img, out_boxes):
     pos_z = 1
 
     return [pos_x, pos_y, pos_z]
+    
+
+# Read intrinsic camera parameters, if none detected prompt calibration.
+#try:
+camera_matrix = np.load("calibration/camera_matrix.npy")
+dist_coefs = np.load("calibration/dist_coefs.npy")
+
+
+# Instantiate all algorithms
+cam = Webcam()
+yolo = YOLO("object_detection")  # assumes YOLO model weights are downloaded! (see keras yolo readme)
+audio = Audio("audio_playground/sound.wav")
+
+# Create Camera object
+# Get camera feed from camera object
+cam.start()
+
+while True:
+    frame = cam.get_current_frame()
+    if frame is not None:
+        print(type(frame))
+        print(frame.shape)
+        frame = np.array(frame)
+        process_frame(frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
 
 
 
