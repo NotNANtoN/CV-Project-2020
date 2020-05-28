@@ -4,6 +4,7 @@ import cv2
 from calibration.webcam import Webcam
 from object_detection.detect_bananas import YOLO
 from audio_playground.Audio import Audio
+from depth2coords import depth2coords
 # Read intrinsic camera parameters, if none detected prompt calibration.
 #try:
 camera_matrix = np.load("calibration/camera_matrix.npy")
@@ -44,6 +45,9 @@ def process_frame(frame):
     # Show depth map
 
     # Combine bounding box and depth to get coordinate of object.
+    #for bounding_box in out_boxes:
+    #    est_x, est_y, est_z = depth2coords.estimate(camera_matrix, depth_image, bounding_box)
+    #    print("Image: {}\tx {}\ty {}\tz {}".format(depth_image, est_x, est_y, est_z))
 
     # METHOD 2 - 
     # Feed camera feed into SLAM and get list of features with coordinates
