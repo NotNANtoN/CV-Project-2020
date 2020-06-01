@@ -48,11 +48,13 @@ def process_frame(frame):
     #    file_detections.write('Banana {} in {}: Top: {}, Left: {}, Bottom: {}, Right: {}, Confidence: {}\n'.format(i+1, file_img, top, left, bottom, right, out_scores[i]))      
     
     cv2.imshow("Yolo processed image", yolo_image)
-
+    
     # METHOD 1 - Depth estimation:
     # Feed camera feed into monocular depth estimation algorithm and get depth map
     # Show depth map
-
+    from monodepth import prediction
+    prediction()
+    
     # Combine bounding box and depth to get coordinate of object.
 
     # METHOD 2 - 
