@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import os
 
 def DepthNorm(x, maxDepth):
     return maxDepth / x
@@ -30,6 +31,10 @@ def load_images(image_files):
         x = np.clip(np.asarray(Image.open( file ), dtype=float) / 255, 0, 1)
         loaded_images.append(x)
     return np.stack(loaded_images, axis=0)
+
+def load_image(image_file):    
+    x = np.clip(np.asarray(Image.open( image_file ), dtype=float) / 255, 0, 1)
+    return x
 
 def to_multichannel(i):
     if i.shape[2] == 3: return i
@@ -75,6 +80,43 @@ def display_images(outputs, inputs=None, gt=None, is_colormap=False, is_rescale=
     all_images = np.stack(all_images)
     
     return skimage.util.montage(all_images, multichannel=True, fill=(0,0,0))
+
+def display_image(outputs, inputs=None, gt=None, is_colormap=False, is_rescale=False):
+    import matplotlib.pyplot as plt
+    import skimage
+    from skimage.transform import resize
+
+    plasma = plt.get_cmap('plasma')
+
+    shape = (outputs[0].shape[0], outputs[0].shape[1], 3)
+
+    all_images = []
+
+    for i in range(outputs.shape[0]):
+        imgs = []
+        if is_colormap:
+            rescaled = outputs[i][:,:,0]
+            if is_rescale:
+                rescaled = rescaled - np.min(rescaled)
+                rescaled = rescaled / np.max(rescaled)
+            imgs.append(plasma(rescaled)[:,:,:3])
+        else:
+            imgs.append(to_multichannel(outputs[i]))
+
+        
+        montage = skimage.util.montage(imgs, multichannel=True, fill=(0,0,0))   
+        im = Image.fromarray(np.uint8(montage*255))
+        print("Saving depth {0}".format(i))
+        im.save("../Data/monodepth/output/"+str(i)+".png")
+
+
+
+
+def save_image(filename, outputs, inputs=None, gt=None, is_colormap=False, is_rescale=False):
+    montage =  display_image(outputs, inputs, is_colormap, is_rescale)
+    im = Image.fromarray(np.uint8(montage*255))
+    im.save(filename)
+
 
 def save_images(filename, outputs, inputs=None, gt=None, is_colormap=False, is_rescale=False):
     montage =  display_images(outputs, inputs, is_colormap, is_rescale)
