@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import time
 
+from PIL import Image
 from multiprocessing import Process, Queue, Value
 
 class Webcam(object):
@@ -42,6 +43,6 @@ class Webcam(object):
         while not self.q.empty():  # get last available image
             img = self.q.get()  
             img = np.array(img)
-            img = Image.fromarray(frame, 'RGB')
+            img = Image.fromarray(img, 'RGB')
 
         return img
