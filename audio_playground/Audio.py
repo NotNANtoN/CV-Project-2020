@@ -16,6 +16,8 @@ class Audio():
     def play(self):
         if self.source.get_state() != openal.AL_PLAYING:
             self.source.play()
+        else:
+            print("Audio unavailable...")
 
     def set_position(self, position):
         position = [x * self.volume_factor for x in position]
@@ -23,7 +25,10 @@ class Audio():
 
         # Calculate angle between object and camera
         angle = self.angle(position, [0, 0, 1])
-
+        
+        print("Pitch angle: ", angle)
+        self.pitch_factor = 1.0
+        angle = position[2] ** 2
         pitch = self.base_pitch + angle * self.pitch_factor
         self.source.set_pitch(pitch)
 
