@@ -1,21 +1,32 @@
 import numpy as np
 import cv2
+import argparse
+import sys
+sys.path.insert(0, "./DenseDepth/")
 
 from calibration.webcam import Webcam
 from video_input import VideoInput
 from object_detection.detect_bananas import YOLO
 from audio_playground.Audio import Audio
+from DenseDepth.monodepth import MonoDepth
 
 # Read intrinsic camera parameters, if none detected prompt calibration.
 #try:
 camera_matrix = np.load("calibration/camera_matrix.npy")
 dist_coefs = np.load("calibration/dist_coefs.npy")
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", help="Data source. Either cam or path to data", default="object_detection/input/video/ycb_seq1_fast.mp4", type=str)
+args = parser.parse_args()
 
 # Instantiate all algorithms
-#cam = Webcam()
-cam = VideoInput("object_detection/input/video/ycb_seq1_fast.mp4")
+
+if args.s == "cam":
+    cam = Webcam()
+else:
+    cam = VideoInput(args.s)
 yolo = YOLO("object_detection")  # assumes YOLO model weights are downloaded! (see keras yolo readme)
+depth_model = MonoDepth("DenseDepth/", parser=parser)
 audio = Audio("audio_playground/sound.wav")
 
 # Create Camera object
@@ -52,9 +63,10 @@ def process_frame(frame):
     # METHOD 1 - Depth estimation:
     # Feed camera feed into monocular depth estimation algorithm and get depth map
     # Show depth map
-    from monodepth import prediction
-    prediction()
-    
+    print("shape before depth forward: ", np.array(frame).shape)
+    depth_map = depth_model.forward(np.array(frame))
+    print("depth map shape: ", depth_map.shape)
+     
     # Combine bounding box and depth to get coordinate of object.
 
     # METHOD 2 - 

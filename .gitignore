@@ -1,3 +1,4 @@
+Data/*
 object_detection/keras_yolo3/yolov3.weights
 utils/calibration/output
 utils/calibration/calib_images
