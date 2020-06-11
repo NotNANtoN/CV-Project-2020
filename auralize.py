@@ -65,19 +65,15 @@ def get_position_bbox(img, out_boxes, depth_map):
 
 def process_frame(frame):
     frame_np = np.array(frame)
-    print("orig shape: ", frame_np.shape)
     # First, calibrate the frame:
     frame_np = undistort_image(frame_np, camera_matrix, dist_coefs)
-    print("shape after calibration: ", frame_np.shape)
     frame_PIL = Image.fromarray(frame_np)
 
     # Feed camera feed into object detection algorithm to get bounding boxes
     # Show bounding boxes in feed
-    print("frame shape: ", frame_np.shape)
     yolo_image, out_boxes, out_scores = yolo.detect_image(frame_PIL)
     yolo_image = np.array(yolo_image)
-    print(yolo_image.shape)
-    
+
     #yolo_image.save(dir_output + '/yolo_' + file_img)
                     
     #for i in range(len(out_boxes)): 
@@ -97,8 +93,7 @@ def process_frame(frame):
         height, width = frame_np.shape[:2]
         depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
         cv2.imshow("Depth image afterwards", depth_map)
-        print("depth map shape: ", depth_map.shape)
-         
+
         # Combine bounding box and depth to get coordinate of object.
         object_position = get_position_bbox(yolo_image, out_boxes, depth_map)
         print("Object pos: ", object_position)

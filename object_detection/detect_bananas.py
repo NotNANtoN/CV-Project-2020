@@ -116,7 +116,6 @@ class YOLO(object):
             boxed_image = letterbox_image(image, new_image_size)
         image_data = np.array(boxed_image, dtype='float32')
 
-        print(image_data.shape)
         image_data /= 255.
         image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
 
@@ -174,7 +173,7 @@ class YOLO(object):
                 del draw
 
         end = timer()
-        print("time required: ", end - start)
+        print("time required: ", round(end - start, 1))
         return image, out_boxes_bananas, out_scores_bananas
 
     def close_session(self):
