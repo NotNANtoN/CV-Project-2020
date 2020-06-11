@@ -1,5 +1,15 @@
 # CV-Project-2020
 
+## Setup:
+First install the required packages using `python -m pip install requirements.txt`.
+
+Now you need to download the weights of the pretrained networks using `bash get_yolo_and_depth_weights.sh`.
+
+Finally, you can call the `auralize.py` script, using either `python auralize.py -s cam` to auralize the location of 
+objects seen from your webcam (currently only supports bananas), or you can call it simply as `python auralize.py` and
+by default the system will choose a video from the YCB dataset. By passing a path to the `-s` argument you can also 
+test auralization of a different video.
+
 ## General system
 ### Overview:
 We have these main sub-systems to finally produce a 3D sound based on an image stream:
