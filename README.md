@@ -1,7 +1,7 @@
 # CV-Project-2020
 
 ## Setup:
-First install the required packages using `python -m pip install requirements.txt`.
+First install the required packages using `python -m pip install -r requirements.txt`.
 
 Now you need to download the weights of the pretrained networks using `bash get_yolo_and_depth_weights.sh`.
 

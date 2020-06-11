@@ -13,12 +13,12 @@ from audio_playground.Audio import Audio
 from DenseDepth.monodepth import MonoDepth
 
 # Read intrinsic camera parameters, if none detected prompt calibration.
-#try:
 camera_matrix = np.load("calibration/camera_matrix.npy")
 dist_coefs = np.load("calibration/dist_coefs.npy")
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-s", help="Data source. Either cam or path to data", default="object_detection/input/video/ycb_seq1_fast.mp4", type=str)
+parser.add_argument("-s", help="Data source. Either cam or path to data",
+                    default="object_detection/input/video/ycb_seq1_fast.mp4", type=str)
 args = parser.parse_args()
 
 # Instantiate all algorithms
