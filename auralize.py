@@ -27,13 +27,14 @@ if args.s == "cam":
     cam = Webcam()
 else:
     cam = VideoInput(args.s)
-yolo = YOLO("object_detection")  # assumes YOLO model weights are downloaded! (see keras yolo readme)
+yolo = YOLO("object_detection")
 depth_model = MonoDepth("DenseDepth/", parser=parser)
 audio = Audio("audio_playground/sound.wav")
 
 # Create Camera object
 # Get camera feed from camera object
 cam.start()
+
 
 def get_position_bbox(img, out_boxes, depth_map):
     top, left, bottom, right = out_boxes[0]
@@ -42,20 +43,26 @@ def get_position_bbox(img, out_boxes, depth_map):
 
     im_width, im_height, _ = img.shape
 
-    pos_x = center_x - im_width / 2
-    pos_y = center_y - im_height / 2
-    print("coords: ", left, right, top, bottom)
+    pos_x = (center_x - im_width / 2) / im_width
+    pos_y = (center_y - im_height / 2) / im_height
     left, right, top, bottom = int(left), int(right), int(top), int(bottom)
+    print("coords: ", left, right, top, bottom)
+    print(im_width, im_height)
+
     depth_box = depth_map[left:right, top:bottom]
+    print("Depth box shape: ", depth_box.shape)
     pos_z = depth_box.mean()
 
     return [pos_x, pos_y, pos_z]
 
+
 def process_frame(frame):
     # Feed camera feed into object detection algorithm to get bounding boxes
     # Show bounding boxes in feed
+    print("frame shape: ", np.array(frame).shape)
     yolo_image, out_boxes, out_scores = yolo.detect_image(frame)
     yolo_image = np.array(yolo_image)
+    print(yolo_image.shape)
     
     #yolo_image.save(dir_output + '/yolo_' + file_img)
                     
@@ -73,7 +80,10 @@ def process_frame(frame):
         depth_map = depth_map.squeeze()
         # Upsample the depth map:
         print("depth map shape before upsampling: ", depth_map.shape)
-        depth_map = np.array(Image.fromarray(depth_map).resize(yolo_image.shape[:2]))
+        cv2.imshow("Depth image before upsampling", depth_map)
+        print("frame shap: ", np.array(frame).shape[:2])
+        depth_map = np.array(Image.fromarray(depth_map).resize(np.array(frame).shape[:2]))
+        cv2.imshow("Depth image afterwards", depth_map)
         print("depth map shape: ", depth_map.shape)
          
         # Combine bounding box and depth to get coordinate of object.
@@ -97,6 +107,7 @@ def process_frame(frame):
 
         audio.set_position(object_position)
         audio.play()
+        print()
     else:
         cv2.imshow("Auralizer", np.array(frame))
 

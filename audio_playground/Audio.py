@@ -25,10 +25,10 @@ class Audio():
 
         # Calculate angle between object and camera
         angle = self.angle(position, [0, 0, 1])
-        
         print("Pitch angle: ", angle)
-        self.pitch_factor = 1.0
-        angle = position[2] ** 2
+
+        self.pitch_factor = 10.0
+        angle = position[2] * 100
         pitch = self.base_pitch + angle * self.pitch_factor
         self.source.set_pitch(pitch)
 

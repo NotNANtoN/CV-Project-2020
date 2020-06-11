@@ -23,9 +23,9 @@ class YOLO(object):
         "model_path": 'keras_yolo3/model_data/yolo.h5',
         "anchors_path": 'keras_yolo3/model_data/yolo_anchors.txt',
         "classes_path": 'keras_yolo3/model_data/coco_classes.txt',
-        "score" : 0.3,
-        "iou" : 0.45,
-        "model_image_size" : (416, 416),
+        "score": 0.3,
+        "iou": 0.45,
+        "model_image_size": (416, 416),
         "gpu_num" : 1,
     }
 
@@ -163,9 +163,9 @@ class YOLO(object):
                     text_origin = np.array([left, top + 1])
     
                 # My kingdom for a good redistributable image drawing library.
-                for i in range(thickness):
+                for j in range(thickness):
                     draw.rectangle(
-                        [left + i, top + i, right - i, bottom - i],
+                        [left + j, top + j, right - j, bottom - j],
                         outline=self.colors[c])
                 draw.rectangle(
                     [tuple(text_origin), tuple(text_origin + label_size)],
@@ -174,11 +174,12 @@ class YOLO(object):
                 del draw
 
         end = timer()
-        print(end - start)
+        print("time required: ", end - start)
         return image, out_boxes_bananas, out_scores_bananas
 
     def close_session(self):
         self.sess.close()
+
 
 def detect_video(yolo, video_path, output_path=""):
     import cv2
