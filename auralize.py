@@ -54,9 +54,11 @@ def get_position_bbox(img, out_boxes, depth_map):
     print("coords: ", left, right, top, bottom)
     print(im_width, im_height)
 
-    depth_box = depth_map[left:right, top:bottom]
+    depth_box = depth_map[top:bottom, left:right]
     print("Depth box shape: ", depth_box.shape)
+    cv2.imshow("Depth box of object", depth_box)
     pos_z = depth_box.mean()
+    cv2.imshow("Depth box in orig img", img[top:bottom, left:right, :])
 
     return [pos_x, pos_y, pos_z]
 
@@ -87,20 +89,20 @@ def process_frame(frame):
         # METHOD 1 - Depth estimation:
         # Feed camera feed into monocular depth estimation algorithm and get depth map
         # Show depth map
-        print("shape before depth forward: ", frame_np.shape)
         start_time = time.time()
         depth_map = depth_model.forward(frame_np)
-        print("Time Depth Est: ", time.time() - start_time)
+        print("Time Depth Est: ", round(time.time() - start_time, 1))
         depth_map = depth_map.squeeze()
         # Upsample the depth map:
-        print("depth map shape before upsampling: ", depth_map.shape)
-        cv2.imshow("Depth image before upsampling", depth_map)
-        print("frame shap: ", np.array(frame).shape[:2])
-        depth_map = np.array(Image.fromarray(depth_map).resize(frame_np.shape[:2]))
+        height, width = frame_np.shape[:2]
+        depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
         cv2.imshow("Depth image afterwards", depth_map)
         print("depth map shape: ", depth_map.shape)
          
         # Combine bounding box and depth to get coordinate of object.
+        object_position = get_position_bbox(yolo_image, out_boxes, depth_map)
+        print("Object pos: ", object_position)
+        # 0.03 - 0.05 for z position
 
         # METHOD 2 - 
         # Feed camera feed into SLAM and get list of features with coordinates
@@ -114,10 +116,7 @@ def process_frame(frame):
         # FINAL:
         # Give coordinate of object to auralizer to create sound.
         
-        object_position = get_position_bbox(yolo_image, out_boxes, depth_map)
-        
-        print("Object pos: ", object_position)
-        # 0.03 - 0.05 for z position
+
 
         audio.set_position(object_position)
         audio.play()
