@@ -77,15 +77,15 @@ def get_chessboard_info(h, w):
     
     
 def undistort_image(img, camera_matrix, dist_coefs):
-        h, w = img.shape[:2]
-        newcameramtx, roi = cv.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w, h))
+    h, w = img.shape[:2]
+    newcameramtx, roi = cv.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w, h))
 
-        dst = cv.undistort(img, camera_matrix, dist_coefs, None, newcameramtx)
+    dst = cv.undistort(img, camera_matrix, dist_coefs, None, newcameramtx)
 
-        # crop and save the image
-        x, y, w, h = roi
-        dst = dst[y:y+h, x:x+w]
-        return dst
+    # crop the image
+    #x, y, w, h = roi
+    #dst = dst[y:y+h, x:x+w]
+    return dst
         
 
 if __name__ == '__main__':

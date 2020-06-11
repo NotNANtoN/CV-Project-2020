@@ -28,7 +28,7 @@ class Audio():
         print("Pitch angle: ", angle)
 
         self.pitch_factor = 10.0
-        angle = position[2] * 100
+        angle = position[2] * 1000
         pitch = self.base_pitch + angle * self.pitch_factor
         self.source.set_pitch(pitch)
 

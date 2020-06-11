@@ -2,19 +2,25 @@ import numpy as np
 import cv2
 import argparse
 import sys
+import time
 sys.path.insert(0, "./DenseDepth/")
 
 from PIL import Image
 
 from calibration.webcam import Webcam
+from calibration.calibrate import undistort_image
 from video_input import VideoInput
 from object_detection.detect_bananas import YOLO
 from audio_playground.Audio import Audio
 from DenseDepth.monodepth import MonoDepth
 
 # Read intrinsic camera parameters, if none detected prompt calibration.
-camera_matrix = np.load("calibration/camera_matrix.npy")
-dist_coefs = np.load("calibration/dist_coefs.npy")
+try:
+    camera_matrix = np.load("calibration/camera_matrix.npy")
+    dist_coefs = np.load("calibration/dist_coefs.npy")
+except FileNotFoundError:
+    print("Calibration parameter loading failed. Please go to the folder calibrate/ to calibrate your camera.")
+    quit()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", help="Data source. Either cam or path to data",
@@ -22,7 +28,6 @@ parser.add_argument("-s", help="Data source. Either cam or path to data",
 args = parser.parse_args()
 
 # Instantiate all algorithms
-
 if args.s == "cam":
     cam = Webcam()
 else:
@@ -57,10 +62,17 @@ def get_position_bbox(img, out_boxes, depth_map):
 
 
 def process_frame(frame):
+    frame_np = np.array(frame)
+    print("orig shape: ", frame_np.shape)
+    # First, calibrate the frame:
+    frame_np = undistort_image(frame_np, camera_matrix, dist_coefs)
+    print("shape after calibration: ", frame_np.shape)
+    frame_PIL = Image.fromarray(frame_np)
+
     # Feed camera feed into object detection algorithm to get bounding boxes
     # Show bounding boxes in feed
-    print("frame shape: ", np.array(frame).shape)
-    yolo_image, out_boxes, out_scores = yolo.detect_image(frame)
+    print("frame shape: ", frame_np.shape)
+    yolo_image, out_boxes, out_scores = yolo.detect_image(frame_PIL)
     yolo_image = np.array(yolo_image)
     print(yolo_image.shape)
     
@@ -75,14 +87,16 @@ def process_frame(frame):
         # METHOD 1 - Depth estimation:
         # Feed camera feed into monocular depth estimation algorithm and get depth map
         # Show depth map
-        print("shape before depth forward: ", np.array(frame).shape)
-        depth_map = depth_model.forward(np.array(frame))
+        print("shape before depth forward: ", frame_np.shape)
+        start_time = time.time()
+        depth_map = depth_model.forward(frame_np)
+        print("Time Depth Est: ", time.time() - start_time)
         depth_map = depth_map.squeeze()
         # Upsample the depth map:
         print("depth map shape before upsampling: ", depth_map.shape)
         cv2.imshow("Depth image before upsampling", depth_map)
         print("frame shap: ", np.array(frame).shape[:2])
-        depth_map = np.array(Image.fromarray(depth_map).resize(np.array(frame).shape[:2]))
+        depth_map = np.array(Image.fromarray(depth_map).resize(frame_np.shape[:2]))
         cv2.imshow("Depth image afterwards", depth_map)
         print("depth map shape: ", depth_map.shape)
          
@@ -109,7 +123,7 @@ def process_frame(frame):
         audio.play()
         print()
     else:
-        cv2.imshow("Auralizer", np.array(frame))
+        cv2.imshow("Auralizer", frame_np)
 
 
 while True:
