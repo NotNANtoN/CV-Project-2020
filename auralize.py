@@ -14,8 +14,6 @@ from object_detection.detect_bananas import YOLO
 from audio_playground.Audio import Audio
 from DenseDepth.monodepth import MonoDepth
 
-use_mono_depth = False
-
 # Read intrinsic camera parameters, if none detected prompt calibration.
 try:
     camera_matrix = np.load("calibration/camera_matrix.npy")
@@ -25,17 +23,21 @@ except FileNotFoundError:
     quit()
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation")
 parser.add_argument("-s", help="Data source. Either cam or path to data",
                     default="object_detection/input/video/ycb_seq1_fast.mp4", type=str)
+parser.add_argument("--tiny", type=int, default=1, help="Whether to use the tiny yolo model instead of the large one")
 args = parser.parse_args()
 
 # Instantiate all algorithms
+use_mono_depth = args.mono
 if args.s == "cam":
     cam = Webcam()
 else:
     cam = VideoInput(args.s)
-yolo = YOLO(path_extension="object_detection", use_tiny=False)
-depth_model = MonoDepth("DenseDepth/", parser=parser)
+yolo = YOLO(path_extension="object_detection", use_tiny=args.tiny)
+if use_mono_depth:
+    depth_model = MonoDepth("DenseDepth/", parser=parser)
 audio = Audio("audio_playground/sound.wav")
 
 # Create Camera object
