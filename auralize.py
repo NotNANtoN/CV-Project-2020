@@ -42,7 +42,6 @@ audio = Audio("audio_playground/sound.wav")
 # Get camera feed from camera object
 cam.start()
 
-
 def get_position_bbox(img, out_boxes):
     top, left, bottom, right = out_boxes[0]
     center_x = (right - left) / 2 + left
@@ -66,7 +65,6 @@ def get_depth(depth_map):
     cv2.imshow("Depth box in orig img", img[top:bottom, left:right, :])
 
     return pos_z
-
 
 def process_frame(frame):
     frame_np = np.array(frame)
@@ -123,7 +121,6 @@ def process_frame(frame):
         print()
     else:
         cv2.imshow("Auralizer", frame_np)
-
 
 while True:
     frame = cam.get_current_frame()
