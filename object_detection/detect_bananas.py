@@ -36,17 +36,23 @@ class YOLO(object):
         else:
             return "Unrecognized attribute name '" + n + "'"
 
-    def __init__(self, path_extension=None, **kwargs):
+    def __init__(self, path_extension=None, use_tiny=True, **kwargs):
         if path_extension is not None:
             for key in self._defaults:
                 if "path" in key:
                     self._defaults[key] = path_extension + "/" + self._defaults[key]
         self.__dict__.update(self._defaults) # set up default values
         self.__dict__.update(kwargs) # and update with user overrides
+
+        if use_tiny:
+            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo.h5'
+            self.anchors_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_anchors.txt'
+
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
         self.sess = K.get_session()
         self.boxes, self.scores, self.classes = self.generate()
+
 
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
