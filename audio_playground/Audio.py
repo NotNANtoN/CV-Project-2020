@@ -4,7 +4,7 @@ import openal
 import numpy as np
 
 class Audio():
-    def __init__(self, wavefile, volume_factor=0.2, pitch_factor=0.01, base_pitch=1):
+    def __init__(self, wavefile, volume_factor=0.2, pitch_factor=2.5, base_pitch=1):
         self.source = openal.oalOpen(wavefile)
         self.volume_factor = volume_factor
         self.pitch_factor = pitch_factor
@@ -17,25 +17,21 @@ class Audio():
         self.source.set_looping(0)
         if self.source.get_state() != openal.AL_PLAYING:
             self.source.play()
-        else:
-            print("Audio unavailable...")
         self.source.set_looping(1)
 
     def set_position(self, position):
-        print("Current pos and pitch: ", self.source.position, self.source.pitch)
         #position = [x * self.volume_factor for x in position]
         self.source.set_position(position)
 
         # Calculate angle between object and camera
-        angle = self.angle(position, np.array([0.0, 0.0, 0.0]))
+        angle = self.angle(position, np.array([0.0, 0.0, 1.0]))
         print("Pitch angle: ", angle)
 
-        self.pitch_factor = 1.0
-        print("pos[2]:", position[2])
-        pitch = (position[2] - 0.03) * 50
-        #pitch = self.base_pitch + angle * self.pitch_factor
+        pitch = self.base_pitch + angle * self.pitch_factor
         print("Setting pitch to: ", pitch)
-        self.source.set_pitch(pitch)
+        self.source.set_pitch(float(pitch))
+        
+        print("Current pos and pitch: ", self.source.position, self.source.pitch)
 
     def mute(self):
         self.source.set_gain(0)

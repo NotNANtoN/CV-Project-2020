@@ -7,8 +7,7 @@ import pyautogui
 volume_factor = 0.02
 pitch_factor = 0.001
 
-source = openal.oalOpen("sound.wav")
-source.play()
+source = openal.oalOpen("audio_playground/sound.wav")
 
 [mouse_x, mouse_y] = pyautogui.position()
 
@@ -24,6 +23,7 @@ while True:
     time.sleep(0.01)
     
     print("X: {}, Y: {}".format(relative_x, relative_y))
+    print("Current pos and pitch: ", source.position, source.pitch)
 
     if source.get_state() != openal.AL_PLAYING:
         source.play()
