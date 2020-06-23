@@ -126,10 +126,17 @@ def process_frame(frame):
     else:
         cv2.imshow("Auralizer", frame_np)
 
+def clean_up():
+    Audio.__del__(Audio)
+
 while True:
     frame = cam.get_current_frame()
     if frame is not None:
         process_frame(frame)
+    else:
+        clean_up()
+        break
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
+            clean_up()
             break
