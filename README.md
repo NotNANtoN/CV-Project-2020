@@ -10,6 +10,9 @@ objects seen from your webcam (currently only supports bananas), or you can call
 by default the system will choose a video from the YCB dataset. By passing a path to the `-s` argument you can also 
 test auralization of a different video.
 
+To build the OrbSLam2 bindings first make sure you have all requirements, mentionend in the ORB_SLAM2/README, file isntalled. Then switch to the ./orbslam_pybindings directory and execute the bash script make_pybindings.sh script. This should now build the whole C-Project as well as our bindings. The python module file is located in orbslam_pybindings/lib/ and can be imported by appending this path to the system path and then calling 'import orbslam2'. 
+There is an additional test_tum.py file in the directory which you can use to test the bindings. You need to download the video files from https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_xyz.tgz and unpack this directory into the orbslam_pybindings/examples/ directory.
+
 ## General system
 ### Overview:
 We have these main sub-systems to finally produce a 3D sound based on an image stream:

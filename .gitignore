@@ -6,6 +6,8 @@ utils/calibration/calib_images
 utils/calibration/__pycache__
 *.avi
 Seminar/
+orbslam_pybindings/examples
+orbslam_pybindings/lib
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
