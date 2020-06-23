@@ -22,7 +22,7 @@ class YOLO(object):
     _defaults = {
         "model_path": 'keras_yolo3/model_data/yolo.h5',
         "anchors_path": 'keras_yolo3/model_data/yolo_anchors.txt',
-        "classes_path": 'keras_yolo3/model_data/coco_classes.txt',
+        "classes_path": 'keras_yolo3/model_data/ycb_classes_bananas.txt',
         "score": 0.3,
         "iou": 0.45,
         "model_image_size": (416, 416),
@@ -45,8 +45,9 @@ class YOLO(object):
         self.__dict__.update(kwargs) # and update with user overrides
 
         if use_tiny:
-            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo.h5'
+            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_ycb_bananas_23062020_1213.h5'
             self.anchors_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_anchors.txt'
+            self.classes_path = path_extension + "/" + 'keras_yolo3/model_data/ycb_classes_bananas.txt'
 
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
@@ -133,54 +134,53 @@ class YOLO(object):
                 K.learning_phase(): 0
             })
 
-        #print('Found {} banana(s)'.format(len(out_boxes)))
+        #print('Found {} Object(s)'.format(len(out_boxes)))
 
         font = ImageFont.truetype(font='object_detection/keras_yolo3/font/FiraMono-Medium.otf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
         thickness = (image.size[0] + image.size[1]) // 300
 
-        out_boxes_bananas = []
-        out_scores_bananas = []
+        #out_boxes_bananas = []
+        #out_scores_bananas = []
 
         for i, c in reversed(list(enumerate(out_classes))):
             predicted_class = self.class_names[c]
-            if predicted_class == "banana":
-                box = out_boxes[i]
-                score = out_scores[i]
-                
-                out_boxes_bananas.append(out_boxes[i])
-                out_scores_bananas.append(out_scores[i])
-    
-                label = '{} {:.2f}'.format(predicted_class, score)
-                draw = ImageDraw.Draw(image)
-                label_size = draw.textsize(label, font)
-    
-                top, left, bottom, right = box
-                top = max(0, np.floor(top + 0.5).astype('int32'))
-                left = max(0, np.floor(left + 0.5).astype('int32'))
-                bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
-                right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
-                print(label, (left, top), (right, bottom))
-    
-                if top - label_size[1] >= 0:
-                    text_origin = np.array([left, top - label_size[1]])
-                else:
-                    text_origin = np.array([left, top + 1])
-    
-                # My kingdom for a good redistributable image drawing library.
-                for j in range(thickness):
-                    draw.rectangle(
-                        [left + j, top + j, right - j, bottom - j],
-                        outline=self.colors[c])
+            box = out_boxes[i]
+            score = out_scores[i]
+            
+            #out_boxes_bananas.append(out_boxes[i])
+            #out_scores_bananas.append(out_scores[i])
+
+            label = '{} {:.2f}'.format(predicted_class, score)
+            draw = ImageDraw.Draw(image)
+            label_size = draw.textsize(label, font)
+
+            top, left, bottom, right = box
+            top = max(0, np.floor(top + 0.5).astype('int32'))
+            left = max(0, np.floor(left + 0.5).astype('int32'))
+            bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
+            right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
+            print(label, (left, top), (right, bottom))
+
+            if top - label_size[1] >= 0:
+                text_origin = np.array([left, top - label_size[1]])
+            else:
+                text_origin = np.array([left, top + 1])
+
+            # My kingdom for a good redistributable image drawing library.
+            for j in range(thickness):
                 draw.rectangle(
-                    [tuple(text_origin), tuple(text_origin + label_size)],
-                    fill=self.colors[c])
-                draw.text(text_origin, label, fill=(0, 0, 0), font=font)
-                del draw
+                    [left + j, top + j, right - j, bottom - j],
+                    outline=self.colors[c])
+            draw.rectangle(
+                [tuple(text_origin), tuple(text_origin + label_size)],
+                fill=self.colors[c])
+            draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+            del draw
 
         end = timer()
-        print("time required: ", round(end - start, 1))
-        return image, out_boxes_bananas, out_scores_bananas
+        print("YOLO detection time: ", round(end - start, 1))
+        return image, out_boxes, out_scores
 
     def close_session(self):
         self.sess.close()

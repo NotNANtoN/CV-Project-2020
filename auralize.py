@@ -26,7 +26,7 @@ except FileNotFoundError:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", help="Data source. Either cam or path to data",
-                    default="object_detection/input/video/ycb_seq1_fast.mp4", type=str)
+                    default="object_detection/input/video/ycb_seq1.mp4", type=str)
 args = parser.parse_args()
 
 # Instantiate all algorithms
@@ -34,9 +34,12 @@ if args.s == "cam":
     cam = Webcam()
 else:
     cam = VideoInput(args.s)
-yolo = YOLO(path_extension="object_detection", use_tiny=False)
-depth_model = MonoDepth("DenseDepth/", parser=parser)
+
+yolo = YOLO(path_extension="object_detection", use_tiny=True)
 audio = Audio("audio_playground/sound.wav")
+
+if use_mono_depth:
+    depth_model = MonoDepth("DenseDepth/", parser=parser)
 
 # Create Camera object
 # Get camera feed from camera object
@@ -82,7 +85,7 @@ def process_frame(frame):
     #for i in range(len(out_boxes)): 
     #    top, left, bottom, right = out_boxes[i]
     #    file_detections.write('Banana {} in {}: Top: {}, Left: {}, Bottom: {}, Right: {}, Confidence: {}\n'.format(i+1, file_img, top, left, bottom, right, out_scores[i]))      
-    if out_boxes:
+    if out_boxes.size:
         cv2.imshow("Auralizer", yolo_image)
 
         # Combine bounding box and depth to get coordinate of object.

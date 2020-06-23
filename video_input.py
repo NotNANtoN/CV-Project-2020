@@ -14,5 +14,8 @@ class VideoInput():
 
     def get_current_frame(self):
         _, frame = self.video.read()
-        frame = Image.fromarray(frame)
+        if frame:
+            frame = Image.fromarray(frame)
+        else:
+            return None
         return frame
