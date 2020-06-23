@@ -25,7 +25,7 @@ except FileNotFoundError:
 parser = argparse.ArgumentParser()
 parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation")
 parser.add_argument("-s", help="Data source. Either cam or path to data",
-                    default="object_detection/input/video/ycb_seq1_fast.mp4", type=str)
+                    default="object_detection/input/video/ycb_seq1.mp4", type=str)
 parser.add_argument("--tiny", type=int, default=1, help="Whether to use the tiny yolo model instead of the large one")
 args = parser.parse_args()
 

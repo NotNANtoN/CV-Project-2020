@@ -45,7 +45,7 @@ class YOLO(object):
         self.__dict__.update(kwargs) # and update with user overrides
 
         if use_tiny:
-            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_ycb_bananas_23062020_1213.h5'
+            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_ycb_bananas.h5'
             self.anchors_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_anchors.txt'
             self.classes_path = path_extension + "/" + 'keras_yolo3/model_data/ycb_classes_bananas.txt'
 
