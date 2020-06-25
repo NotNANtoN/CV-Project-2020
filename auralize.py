@@ -131,12 +131,13 @@ def clean_up():
 
 while True:
     frame = cam.get_current_frame()
+    print("frame. ", frame)
     if frame is not None:
         process_frame(frame)
-    else:
-        clean_up()
-        break
+    #else:
+    #    clean_up()
+    #    break
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
-            clean_up()
-            break
+        clean_up()
+        break
