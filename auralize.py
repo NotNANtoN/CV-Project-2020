@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation")
 parser.add_argument("-s", help="Data source. Either cam or path to data",
                     default="object_detection/input/video/ycb_seq1.mp4", type=str)
-parser.add_argument("--tiny", type=int, default=1, help="Whether to use the tiny yolo model instead of the large one")
+parser.add_argument("--tiny", type=int, default=0, help="Whether to use the tiny yolo model instead of the large one")
 args = parser.parse_args()
 
 # Instantiate all algorithms
@@ -42,12 +42,15 @@ audio = Audio("audio_playground/sound.wav")
 if use_mono_depth:
     depth_model = MonoDepth("DenseDepth/", parser=parser)
 
+# define initial object class to search for: 0 = meat can, 1 = banana, 2 = large marker 
+search_object_class = 1
+
 # Create Camera object
 # Get camera feed from camera object
 cam.start()
 
-def get_position_bbox(img, out_boxes):
-    top, left, bottom, right = out_boxes[0]
+def get_position_bbox(img, out_boxes, index):
+    top, left, bottom, right = out_boxes[index]
     center_x = (right - left) / 2 + left
     center_y = (bottom - top) / 2 + top
 
@@ -56,14 +59,14 @@ def get_position_bbox(img, out_boxes):
     pos_x = (center_x - im_width / 2) / im_width
     pos_y = (center_y - im_height / 2) / im_height
     left, right, top, bottom = int(left), int(right), int(top), int(bottom)
-    print("coords: ", left, right, top, bottom)
-    print(im_width, im_height)
+    #print("coords: ", left, right, top, bottom)
+    #print(im_width, im_height)
 
     return [pos_x, pos_y, 1.0]
 
 def get_depth(depth_map):
     depth_box = depth_map[top:bottom, left:right]
-    print("Depth box shape: ", depth_box.shape)
+    #print("Depth box shape: ", depth_box.shape)
     cv2.imshow("Depth box of object", depth_box)
     pos_z = depth_box.mean()
     cv2.imshow("Depth box in orig img", img[top:bottom, left:right, :])
@@ -78,7 +81,7 @@ def process_frame(frame):
 
     # Feed camera feed into object detection algorithm to get bounding boxes
     # Show bounding boxes in feed
-    yolo_image, out_boxes, out_scores = yolo.detect_image(frame_PIL)
+    yolo_image, out_boxes, out_scores, out_classes = yolo.detect_image(frame_PIL)
     yolo_image = np.array(yolo_image)
 
     #yolo_image.save(dir_output + '/yolo_' + file_img)
@@ -89,45 +92,58 @@ def process_frame(frame):
     if out_boxes.size:
         cv2.imshow("Auralizer", yolo_image)
 
-        # Combine bounding box and depth to get coordinate of object.
-        object_position = get_position_bbox(yolo_image, out_boxes)
+        bbox_index = -1
 
-        # METHOD 1 - Depth estimation:
-        # Feed camera feed into monocular depth estimation algorithm and get depth map
-        # Show depth map
-        if use_mono_depth:
-            start_time = time.time()
-            depth_map = depth_model.forward(frame_np)
-            print("Time Depth Est: ", round(time.time() - start_time, 1))
-            depth_map = depth_map.squeeze()
-            # Upsample the depth map:
-            height, width = frame_np.shape[:2]
-            depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
-            cv2.imshow("Depth image afterwards", depth_map)
-            object_position[2] = get_depth(depth_map)
+        # Select bounding box of demanded object class with highest score
+        for i, detected_object in enumerate(zip(out_boxes, out_scores, out_classes)):
+            max_score = 0
+            print('Detected Object: {}'.format(detected_object))
+            if detected_object[2] == search_object_class and detected_object[1] > max_score:
+                max_score = detected_object[1]
+                bbox_index = i
 
-        print("Object pos: ", object_position)
+        print('Bbox index for object class {}: {}'.format(search_object_class, bbox_index))
 
-        # METHOD 2 - 
-        # Feed camera feed into SLAM and get list of features with coordinates
-        # Mark features that can be seen from current frame and that are within bounding box as relating to the object
-        # Get coordinates of the feature group that is closest and/or has the highest density of detected features for the sought object
+        if bbox_index > -1:
+            # Combine bounding box and depth to get coordinate of object.
+            object_position = get_position_bbox(yolo_image, out_boxes, bbox_index)
 
-        # METHOD 3 -
-        # Calculate center of detected bbox relative to camera center
-        # Those coordinates will represent x and y of the current 3D position (with fixed z value)
+            # METHOD 1 - Depth estimation:
+            # Feed camera feed into monocular depth estimation algorithm and get depth map
+            # Show depth map
+            if use_mono_depth:
+                start_time = time.time()
+                depth_map = depth_model.forward(frame_np)
+                #print("Time Depth Est: ", round(time.time() - start_time, 1))
+                depth_map = depth_map.squeeze()
+                # Upsample the depth map:
+                height, width = frame_np.shape[:2]
+                depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
+                cv2.imshow("Depth image afterwards", depth_map)
+                object_position[2] = get_depth(depth_map)
 
-        # FINAL:
-        # Give coordinate of object to auralizer to create sound.
+            #print("Object pos: ", object_position)
 
-        audio.play()
-        audio.set_position(object_position)
-        print()
+            # METHOD 2 - 
+            # Feed camera feed into SLAM and get list of features with coordinates
+            # Mark features that can be seen from current frame and that are within bounding box as relating to the object
+            # Get coordinates of the feature group that is closest and/or has the highest density of detected features for the sought object
+
+            # METHOD 3 -
+            # Calculate center of detected bbox relative to camera center
+            # Those coordinates will represent x and y of the current 3D position (with fixed z value)
+
+            # FINAL:
+            # Give coordinate of object to auralizer to create sound.
+
+            audio.play()
+            audio.set_position(object_position)
+            print()
     else:
         cv2.imshow("Auralizer", frame_np)
 
 def clean_up():
-    Audio.__del__(Audio)
+    audio.__del__()
 
 while True:
     frame = cam.get_current_frame()
@@ -137,6 +153,26 @@ while True:
         clean_up()
         break
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-            clean_up()
-            break
+    key = cv2.waitKey(1)
+
+    if key & 0xFF == ord('q'):
+        clean_up()
+        break
+
+    if key & 0xFF == ord('1'):
+        #search for meat can
+        search_object_class = 0
+        print('Search for meat can!')
+        audio.stop()
+
+    if key & 0xFF == ord('2'):
+        #search for banana
+        search_object_class = 1
+        print('Search for banana!')
+        audio.stop()
+
+    if key & 0xFF == ord('3'):
+        #search for large marker
+        search_object_class = 2
+        print('Search for large marker!')
+        audio.stop()

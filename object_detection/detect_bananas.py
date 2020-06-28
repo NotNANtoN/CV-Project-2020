@@ -20,9 +20,9 @@ from .keras_yolo3.yolo3.utils import letterbox_image
 
 class YOLO(object):
     _defaults = {
-        "model_path": 'keras_yolo3/model_data/yolo.h5',
+        "model_path": 'keras_yolo3/model_data/yolo_ycb_3objects.h5',
         "anchors_path": 'keras_yolo3/model_data/yolo_anchors.txt',
-        "classes_path": 'keras_yolo3/model_data/ycb_classes_bananas.txt',
+        "classes_path": 'keras_yolo3/model_data/ycb_3objects_classes.txt',
         "score": 0.3,
         "iou": 0.45,
         "model_image_size": (416, 416),
@@ -140,16 +140,10 @@ class YOLO(object):
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
         thickness = (image.size[0] + image.size[1]) // 300
 
-        #out_boxes_bananas = []
-        #out_scores_bananas = []
-
         for i, c in reversed(list(enumerate(out_classes))):
             predicted_class = self.class_names[c]
             box = out_boxes[i]
             score = out_scores[i]
-            
-            #out_boxes_bananas.append(out_boxes[i])
-            #out_scores_bananas.append(out_scores[i])
 
             label = '{} {:.2f}'.format(predicted_class, score)
             draw = ImageDraw.Draw(image)
@@ -180,7 +174,7 @@ class YOLO(object):
 
         end = timer()
         print("YOLO detection time: ", round(end - start, 1))
-        return image, out_boxes, out_scores
+        return image, out_boxes, out_scores, out_classes
 
     def close_session(self):
         self.sess.close()
