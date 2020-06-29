@@ -10,7 +10,7 @@ from PIL import Image
 from calibration.webcam import Webcam
 from calibration.calibrate import undistort_image
 from video_input import VideoInput
-from object_detection.detect_bananas import YOLO
+from object_detection.detect_YCB import YOLO
 from audio_playground.Audio import Audio
 from DenseDepth.monodepth import MonoDepth
 
@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation")
 parser.add_argument("-s", help="Data source. Either cam or path to data",
                     default="object_detection/input/video/ycb_seq1.mp4", type=str)
-parser.add_argument("--tiny", type=int, default=0, help="Whether to use the tiny yolo model instead of the large one")
+parser.add_argument("--tiny", type=int, default=1, help="Whether to use the tiny yolo model instead of the large one")
 args = parser.parse_args()
 
 # Instantiate all algorithms
