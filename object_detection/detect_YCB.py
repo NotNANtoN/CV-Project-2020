@@ -3,7 +3,6 @@
 Class definition of YOLO_v3 style detection model on image and video
 """
 
-import colorsys
 import os
 from timeit import default_timer as timer
 
@@ -45,9 +44,9 @@ class YOLO(object):
         self.__dict__.update(kwargs) # and update with user overrides
 
         if use_tiny:
-            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_ycb_3objects.h5'
+            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_ycb.h5'
             self.anchors_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_anchors.txt'
-            self.classes_path = path_extension + "/" + 'keras_yolo3/model_data/ycb_3objects_classes.txt'
+            self.classes_path = path_extension + "/" + 'keras_yolo3/model_data/ycb_classes.txt'
 
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
@@ -90,17 +89,6 @@ class YOLO(object):
 
         print('{} model, anchors, and classes loaded.'.format(model_path))
 
-        # Generate colors for drawing bounding boxes.
-        hsv_tuples = [(x / len(self.class_names), 1., 1.)
-                      for x in range(len(self.class_names))]
-        self.colors = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
-        self.colors = list(
-            map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)),
-                self.colors))
-        np.random.seed(10101)  # Fixed seed for consistent colors across runs.
-        np.random.shuffle(self.colors)  # Shuffle colors to decorrelate adjacent classes.
-        np.random.seed(None)  # Reset seed to default.
-
         # Generate output tensor targets for filtered bounding boxes.
         self.input_image_shape = K.placeholder(shape=(2, ))
         if self.gpu_num>=2:
@@ -110,7 +98,7 @@ class YOLO(object):
                 score_threshold=self.score, iou_threshold=self.iou)
         return boxes, scores, classes
 
-    def detect_image(self, image):
+    def detect_image(self, image, search_object_class):
         start = timer()
 
         if self.model_image_size != (None, None):
@@ -134,19 +122,30 @@ class YOLO(object):
                 K.learning_phase(): 0
             })
 
+        search_object_index = -1
+        box = None
+
+        # Select bounding box of demanded object class with highest score
+        for i, detected_object in enumerate(zip(out_boxes, out_scores, out_classes)):
+            max_score = 0
+            print('Detected Object: {}'.format(detected_object))
+            if detected_object[2] == search_object_class and detected_object[1] > max_score:
+                max_score = detected_object[1]
+                search_object_index = i
+
         #print('Found {} Object(s)'.format(len(out_boxes)))
 
         font = ImageFont.truetype(font='object_detection/keras_yolo3/font/FiraMono-Medium.otf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-        thickness = (image.size[0] + image.size[1]) // 300
+        draw = ImageDraw.Draw(image)
+        color = (0,255,255)
 
-        for i, c in reversed(list(enumerate(out_classes))):
-            predicted_class = self.class_names[c]
-            box = out_boxes[i]
-            score = out_scores[i]
+        if search_object_index > -1:
+            predicted_class = self.class_names[out_classes[search_object_index]]
+            box = out_boxes[search_object_index]
+            score = out_scores[search_object_index]
 
             label = '{} {:.2f}'.format(predicted_class, score)
-            draw = ImageDraw.Draw(image)
             label_size = draw.textsize(label, font)
 
             top, left, bottom, right = box
@@ -161,20 +160,25 @@ class YOLO(object):
             else:
                 text_origin = np.array([left, top + 1])
 
-            # My kingdom for a good redistributable image drawing library.
+            # Draw BBox + Label
+            thickness = (image.size[0] + image.size[1]) // 300
             for j in range(thickness):
                 draw.rectangle(
                     [left + j, top + j, right - j, bottom - j],
-                    outline=self.colors[c])
+                    outline=color)
             draw.rectangle(
                 [tuple(text_origin), tuple(text_origin + label_size)],
-                fill=self.colors[c])
+                fill=color)
             draw.text(text_origin, label, fill=(0, 0, 0), font=font)
-            del draw
+
+        text_search = 'Search for {}. '.format(self.class_names[search_object_class])
+        draw.rectangle([(5, 5), tuple(draw.textsize(text_search, font))], fill=color)
+        draw.text([5, 5], text_search, fill=(0, 0, 0), font=font)
+        del draw
 
         end = timer()
         print("YOLO detection time: ", round(end - start, 1))
-        return image, out_boxes, out_scores, out_classes
+        return image, box
 
     def close_session(self):
         self.sess.close()

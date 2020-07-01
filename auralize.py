@@ -23,6 +23,7 @@ except FileNotFoundError:
     quit()
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--object", type=int, default=0, help="Which YCB-object to search for (0-20)")
 parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation")
 parser.add_argument("-s", help="Data source. Either cam or path to data",
                     default="object_detection/input/video/ycb_seq1.mp4", type=str)
@@ -43,14 +44,14 @@ if use_mono_depth:
     depth_model = MonoDepth("DenseDepth/", parser=parser)
 
 # define initial object class to search for: 0 = meat can, 1 = banana, 2 = large marker 
-search_object_class = 1
+search_object_class = args.object
 
 # Create Camera object
 # Get camera feed from camera object
 cam.start()
 
-def get_position_bbox(img, out_boxes, index):
-    top, left, bottom, right = out_boxes[index]
+def get_position_bbox(img, out_box):
+    top, left, bottom, right = out_box
     center_x = (right - left) / 2 + left
     center_y = (bottom - top) / 2 + top
 
@@ -81,17 +82,19 @@ def process_frame(frame):
 
     # Feed camera feed into object detection algorithm to get bounding boxes
     # Show bounding boxes in feed
-    yolo_image, out_boxes, out_scores, out_classes = yolo.detect_image(frame_PIL)
+    yolo_image, out_box = yolo.detect_image(frame_PIL, search_object_class)
     yolo_image = np.array(yolo_image)
 
     #yolo_image.save(dir_output + '/yolo_' + file_img)
                     
     #for i in range(len(out_boxes)): 
     #    top, left, bottom, right = out_boxes[i]
-    #    file_detections.write('Banana {} in {}: Top: {}, Left: {}, Bottom: {}, Right: {}, Confidence: {}\n'.format(i+1, file_img, top, left, bottom, right, out_scores[i]))      
-    if out_boxes.size:
-        cv2.imshow("Auralizer", yolo_image)
+    #    file_detections.write('Object {} in {}: Top: {}, Left: {}, Bottom: {}, Right: {}, Confidence: {}\n'.format(i+1, file_img, top, left, bottom, right, out_scores[i]))      
+    cv2.imshow("Auralizer", yolo_image)
+    
+    if out_box is not None:
 
+        '''
         bbox_index = -1
 
         # Select bounding box of demanded object class with highest score
@@ -103,44 +106,42 @@ def process_frame(frame):
                 bbox_index = i
 
         print('Bbox index for object class {}: {}'.format(search_object_class, bbox_index))
+        '''
 
-        if bbox_index > -1:
-            # Combine bounding box and depth to get coordinate of object.
-            object_position = get_position_bbox(yolo_image, out_boxes, bbox_index)
+        # Combine bounding box and depth to get coordinate of object.
+        object_position = get_position_bbox(yolo_image, out_box)
 
-            # METHOD 1 - Depth estimation:
-            # Feed camera feed into monocular depth estimation algorithm and get depth map
-            # Show depth map
-            if use_mono_depth:
-                start_time = time.time()
-                depth_map = depth_model.forward(frame_np)
-                #print("Time Depth Est: ", round(time.time() - start_time, 1))
-                depth_map = depth_map.squeeze()
-                # Upsample the depth map:
-                height, width = frame_np.shape[:2]
-                depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
-                cv2.imshow("Depth image afterwards", depth_map)
-                object_position[2] = get_depth(depth_map)
+        # METHOD 1 - Depth estimation:
+        # Feed camera feed into monocular depth estimation algorithm and get depth map
+        # Show depth map
+        if use_mono_depth:
+            start_time = time.time()
+            depth_map = depth_model.forward(frame_np)
+            #print("Time Depth Est: ", round(time.time() - start_time, 1))
+            depth_map = depth_map.squeeze()
+            # Upsample the depth map:
+            height, width = frame_np.shape[:2]
+            depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
+            cv2.imshow("Depth image afterwards", depth_map)
+            object_position[2] = get_depth(depth_map)
 
-            #print("Object pos: ", object_position)
+        #print("Object pos: ", object_position)
 
-            # METHOD 2 - 
-            # Feed camera feed into SLAM and get list of features with coordinates
-            # Mark features that can be seen from current frame and that are within bounding box as relating to the object
-            # Get coordinates of the feature group that is closest and/or has the highest density of detected features for the sought object
+        # METHOD 2 - 
+        # Feed camera feed into SLAM and get list of features with coordinates
+        # Mark features that can be seen from current frame and that are within bounding box as relating to the object
+        # Get coordinates of the feature group that is closest and/or has the highest density of detected features for the sought object
 
-            # METHOD 3 -
-            # Calculate center of detected bbox relative to camera center
-            # Those coordinates will represent x and y of the current 3D position (with fixed z value)
+        # METHOD 3 -
+        # Calculate center of detected bbox relative to camera center
+        # Those coordinates will represent x and y of the current 3D position (with fixed z value)
 
-            # FINAL:
-            # Give coordinate of object to auralizer to create sound.
+        # FINAL:
+        # Give coordinate of object to auralizer to create sound.
 
-            audio.play()
-            audio.set_position(object_position)
-            print()
-    else:
-        cv2.imshow("Auralizer", frame_np)
+        audio.play()
+        audio.set_position(object_position)
+        print()
 
 def clean_up():
     audio.__del__()
@@ -154,26 +155,23 @@ while True:
     #    clean_up()
     #    break
 
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(1) & 0xFF
 
-    if key & 0xFF == ord('q'):
+    if key == ord('q'):
         clean_up()
         break
 
-    if key & 0xFF == ord('1'):
-        #search for meat can
-        search_object_class = 0
-        print('Search for meat can!')
+    if key == ord('1'):
+        print('LEFT')
+        if search_object_class > 0:
+            search_object_class -= 1
+        else:
+            search_object_class = 20
         audio.stop()
 
-    if key & 0xFF == ord('2'):
-        #search for banana
-        search_object_class = 1
-        print('Search for banana!')
-        audio.stop()
-
-    if key & 0xFF == ord('3'):
-        #search for large marker
-        search_object_class = 2
-        print('Search for large marker!')
+    if key == ord('2'):
+        if search_object_class < 20:
+            search_object_class += 1
+        else:
+            search_object_class = 0
         audio.stop()

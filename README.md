@@ -22,9 +22,11 @@ We have these main sub-systems to finally produce a 3D sound based on an image s
 ### How to use:
 Run the `auralize.py` script. It will take the camera feed as an input and show as an input the observed image with marked objects, along with a stereo sound signal indicating the distance to the object.
 
+Use keys '1' and '2' to switch between objects. 'q' to quit.
+
 Weights for detection model (save to object_detection/keras_yolo3/model_data/):  
 large (~240MB): https://drive.google.com/open?id=1WD8g2u_MI7KOpZG3bGm9yANEEPVkZhi0  
-tiny (~35MB): https://drive.google.com/open?id=1jBFaKNq9ITBdvnDtuQe58DgF5B68Gj6F
+tiny (~35MB): https://drive.google.com/open?id=1nySoKfuXlDnYCsvqmPJzbvR-XB2jHSaj
 ### System evaluation:
 1. Speed: The faster the better. We need to evaluate how many FPS our system is required to be able to process to be useful.
 2. Accuracy: The more accurate the better if the system is still fast enough. Also here we need to find a way of how much inprecision in the x,y domain and in the depth domain is acceptable to still handle the target objects.
