@@ -85,28 +85,9 @@ def process_frame(frame):
     yolo_image, out_box = yolo.detect_image(frame_PIL, search_object_class)
     yolo_image = np.array(yolo_image)
 
-    #yolo_image.save(dir_output + '/yolo_' + file_img)
-                    
-    #for i in range(len(out_boxes)): 
-    #    top, left, bottom, right = out_boxes[i]
-    #    file_detections.write('Object {} in {}: Top: {}, Left: {}, Bottom: {}, Right: {}, Confidence: {}\n'.format(i+1, file_img, top, left, bottom, right, out_scores[i]))      
     cv2.imshow("Auralizer", yolo_image)
     
     if out_box is not None:
-
-        '''
-        bbox_index = -1
-
-        # Select bounding box of demanded object class with highest score
-        for i, detected_object in enumerate(zip(out_boxes, out_scores, out_classes)):
-            max_score = 0
-            print('Detected Object: {}'.format(detected_object))
-            if detected_object[2] == search_object_class and detected_object[1] > max_score:
-                max_score = detected_object[1]
-                bbox_index = i
-
-        print('Bbox index for object class {}: {}'.format(search_object_class, bbox_index))
-        '''
 
         # Combine bounding box and depth to get coordinate of object.
         object_position = get_position_bbox(yolo_image, out_box)
@@ -151,9 +132,6 @@ while True:
     print("frame. ", frame)
     if frame is not None:
         process_frame(frame)
-    #else:
-    #    clean_up()
-    #    break
 
     key = cv2.waitKey(1) & 0xFF
 
@@ -162,7 +140,6 @@ while True:
         break
 
     if key == ord('1'):
-        print('LEFT')
         if search_object_class > 0:
             search_object_class -= 1
         else:
