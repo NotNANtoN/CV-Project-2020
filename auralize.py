@@ -66,12 +66,13 @@ def get_position_bbox(img, out_box):
 
     return [pos_x, pos_y, 1.0]
 
-def get_depth(depth_map):
+def get_depth(depth_map, out_box):
+    top, left, bottom, right = map(lambda x: int(x), out_box)
     depth_box = depth_map[top:bottom, left:right]
     #print("Depth box shape: ", depth_box.shape)
     cv2.imshow("Depth box of object", depth_box)
     pos_z = depth_box.mean()
-    cv2.imshow("Depth box in orig img", img[top:bottom, left:right, :])
+    #cv2.imshow("Depth box in orig img", img[top:bottom, left:right, :])
 
     return pos_z
 
@@ -104,8 +105,8 @@ def process_frame(frame):
             # Upsample the depth map:
             height, width = frame_np.shape[:2]
             depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
-            cv2.imshow("Depth image afterwards", depth_map)
-            object_position[2] = get_depth(depth_map)
+            #cv2.imshow("Depth image afterwards", depth_map)
+            object_position[2] = get_depth(depth_map, out_box)
 
         #print("Object pos: ", object_position)
 
@@ -139,16 +140,13 @@ while True:
         clean_up()
         break
 
-    if key == ord('1'):
-        if search_object_class > 0:
+    # Count up or down
+    if key == ord('1') or key == ord('2'):
+        if key == ord('1'):
             search_object_class -= 1
-        else:
-            search_object_class = num_classes - 1
+        if key == ord('2'):
+            search_object_class += 1
+            
+        search_object_class = search_object_class % (num_classes - 1)
         audio.stop()
 
-    if key == ord('2'):
-        if search_object_class < num_classes - 1:
-            search_object_class += 1
-        else:
-            search_object_class = 0
-        audio.stop()
