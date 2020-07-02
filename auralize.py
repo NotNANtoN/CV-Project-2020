@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-s", default="object_detection/input/video/ycb_seq1.mp4", type=str, help="Data source. Either cam or path to data.")
 parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation.")
 parser.add_argument("--mp", default=0, type=int, help="Whether to use multiprocessing for the camera input. Not working for windows OS.")
-parser.add_argument("--model", default=1, type=int, help="Whether to use YCB-model (0) or COCO (1).")
+parser.add_argument("--model", default=0, type=int, help="Whether to use YCB-model (0) or COCO (1).")
 parser.add_argument("--object", default=0, type=int, help="Which object to search for.")
 args = parser.parse_args()
 
