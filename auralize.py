@@ -66,12 +66,13 @@ def get_position_bbox(img, out_box):
 
     return [pos_x, pos_y, 1.0]
 
-def get_depth(depth_map):
+def get_depth(depth_map, out_box):
+    top, left, bottom, right = map(lambda x: int(x), out_box)
     depth_box = depth_map[top:bottom, left:right]
     #print("Depth box shape: ", depth_box.shape)
     cv2.imshow("Depth box of object", depth_box)
     pos_z = depth_box.mean()
-    cv2.imshow("Depth box in orig img", img[top:bottom, left:right, :])
+    #cv2.imshow("Depth box in orig img", img[top:bottom, left:right, :])
 
     return pos_z
 
@@ -104,8 +105,8 @@ def process_frame(frame):
             # Upsample the depth map:
             height, width = frame_np.shape[:2]
             depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
-            cv2.imshow("Depth image afterwards", depth_map)
-            object_position[2] = get_depth(depth_map)
+            #cv2.imshow("Depth image afterwards", depth_map)
+            object_position[2] = get_depth(depth_map, out_box)
 
         #print("Object pos: ", object_position)
 
@@ -130,8 +131,9 @@ def clean_up():
 
 while True:
     frame = cam.get_current_frame()
-    print("frame. ", frame)
+
     if frame is not None:
+        print("frame. ", frame)
         process_frame(frame)
 
     key = cv2.waitKey(1) & 0xFF
