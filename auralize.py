@@ -133,7 +133,6 @@ while True:
     frame = cam.get_current_frame()
 
     if frame is not None:
-        print("frame. ", frame)
         process_frame(frame)
 
     key = cv2.waitKey(1) & 0xFF
@@ -142,16 +141,13 @@ while True:
         clean_up()
         break
 
-    if key == ord('1'):
-        if search_object_class > 0:
+    # Count up or down
+    if key == ord('1') or key == ord('2'):
+        if key == ord('1'):
             search_object_class -= 1
-        else:
-            search_object_class = 20
+        if key == ord('2'):
+            search_object_class += 1
+            
+        search_object_class = search_object_class % 21
         audio.stop()
 
-    if key == ord('2'):
-        if search_object_class < 20:
-            search_object_class += 1
-        else:
-            search_object_class = 0
-        audio.stop()
