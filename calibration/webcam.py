@@ -4,12 +4,12 @@ import time
 
 from multiprocessing import Process, Queue, Value
 
-class Webcam(object):
+class Webcam:
     def __init__(self, camera_num=0, sequential=True):
         self.cap = cv2.VideoCapture(camera_num)
         
         self.sequential = sequential
-        if self.sequential:
+        if not self.sequential:
             self.current_frame = None 
             self.ret = None 
             
@@ -20,7 +20,8 @@ class Webcam(object):
 
     # create thread for capturing images
     def start(self):
-        self.vp.start()        
+        if not self.sequential:
+            self.vp.start()        
         
     def quit(self):
         print('webcam closing...') 
