@@ -19,9 +19,9 @@ from .keras_yolo3.yolo3.utils import letterbox_image
 
 class YOLO(object):
     _defaults = {
-        "model_path": 'keras_yolo3/model_data/yolo_ycb_3objects.h5',
-        "anchors_path": 'keras_yolo3/model_data/yolo_anchors.txt',
-        "classes_path": 'keras_yolo3/model_data/ycb_3objects_classes.txt',
+        "model_path": 'keras_yolo3/model_data/tiny_yolo_ycb.h5',
+        "anchors_path": 'keras_yolo3/model_data/tiny_yolo_anchors.txt',
+        "classes_path": 'keras_yolo3/model_data/ycb_classes.txt',
         "score": 0.3,
         "iou": 0.45,
         "model_image_size": (416, 416),
@@ -35,7 +35,7 @@ class YOLO(object):
         else:
             return "Unrecognized attribute name '" + n + "'"
 
-    def __init__(self, path_extension=None, use_tiny=True, **kwargs):
+    def __init__(self, path_extension=None, model=0, **kwargs):
         if path_extension is not None:
             for key in self._defaults:
                 if "path" in key:
@@ -43,10 +43,9 @@ class YOLO(object):
         self.__dict__.update(self._defaults) # set up default values
         self.__dict__.update(kwargs) # and update with user overrides
 
-        if use_tiny:
-            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_ycb.h5'
-            self.anchors_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo_anchors.txt'
-            self.classes_path = path_extension + "/" + 'keras_yolo3/model_data/ycb_classes.txt'
+        if model == 1:
+            self.model_path = path_extension + "/" + 'keras_yolo3/model_data/tiny_yolo.h5'
+            self.classes_path = path_extension + "/" + 'keras_yolo3/model_data/coco_classes.txt'
 
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
@@ -67,6 +66,9 @@ class YOLO(object):
             anchors = f.readline()
         anchors = [float(x) for x in anchors.split(',')]
         return np.array(anchors).reshape(-1, 2)
+
+    def get_num_classes(self):
+        return len(self.class_names)
 
     def generate(self):
         model_path = os.path.expanduser(self.model_path)
@@ -128,7 +130,8 @@ class YOLO(object):
         # Select bounding box of demanded object class with highest score
         for i, detected_object in enumerate(zip(out_boxes, out_scores, out_classes)):
             max_score = 0
-            print('Detected Object: {}'.format(detected_object))
+            print('Detected Object: {}, Bbox: {}, Confidence: {}'.format(
+                self.class_names[detected_object[2]], detected_object[0], detected_object[1]))
             if detected_object[2] == search_object_class and detected_object[1] > max_score:
                 max_score = detected_object[1]
                 search_object_index = i
@@ -177,7 +180,7 @@ class YOLO(object):
         del draw
 
         end = timer()
-        print("YOLO detection time: ", round(end - start, 1))
+        print('YOLO detection time: {}\n'.format(round(end - start, 1)))
         return image, box
 
     def close_session(self):

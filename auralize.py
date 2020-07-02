@@ -23,12 +23,11 @@ except FileNotFoundError:
     quit()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--object", type=int, default=0, help="Which YCB-object to search for (0-20)")
-parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation")
-parser.add_argument("-s", help="Data source. Either cam or path to data",
-                    default="object_detection/input/video/ycb_seq1.mp4", type=str)
-parser.add_argument("--tiny", type=int, default=1, help="Whether to use the tiny yolo model instead of the large one")
-parser.add_argument("--mp", type=int, default=1, help="Whether to use multiprocessing for the camera input. Not working for windows OS.")
+parser.add_argument("-s", default="object_detection/input/video/ycb_seq1.mp4", type=str, help="Data source. Either cam or path to data.")
+parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation.")
+parser.add_argument("--mp", default=0, type=int, help="Whether to use multiprocessing for the camera input. Not working for windows OS.")
+parser.add_argument("--model", default=1, type=int, help="Whether to use YCB-model (0) or COCO (1).")
+parser.add_argument("--object", default=0, type=int, help="Which object to search for.")
 args = parser.parse_args()
 
 # Instantiate all algorithms
@@ -38,7 +37,7 @@ if args.s == "cam":
 else:
     cam = VideoInput(args.s)
 
-yolo = YOLO(path_extension="object_detection", use_tiny=args.tiny)
+yolo = YOLO(path_extension="object_detection", model=args.model)
 audio = Audio("audio_playground/sound.wav")
 
 if use_mono_depth:
@@ -46,6 +45,7 @@ if use_mono_depth:
 
 # define initial object class to search for: 0 = meat can, 1 = banana, 2 = large marker 
 search_object_class = args.object
+num_classes = yolo.get_num_classes()
 
 # Create Camera object
 # Get camera feed from camera object
@@ -130,7 +130,6 @@ def clean_up():
 
 while True:
     frame = cam.get_current_frame()
-    print("frame. ", frame)
     if frame is not None:
         process_frame(frame)
 
@@ -144,11 +143,11 @@ while True:
         if search_object_class > 0:
             search_object_class -= 1
         else:
-            search_object_class = 20
+            search_object_class = num_classes - 1
         audio.stop()
 
     if key == ord('2'):
-        if search_object_class < 20:
+        if search_object_class < num_classes - 1:
             search_object_class += 1
         else:
             search_object_class = 0
