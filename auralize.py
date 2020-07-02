@@ -28,12 +28,13 @@ parser.add_argument("--mono", default=0, type=int, help="Whether to use monocula
 parser.add_argument("-s", help="Data source. Either cam or path to data",
                     default="object_detection/input/video/ycb_seq1.mp4", type=str)
 parser.add_argument("--tiny", type=int, default=1, help="Whether to use the tiny yolo model instead of the large one")
+parser.add_argument("--mp", type=int, default=1, help="Whether to use multiprocessing for the camera input. Not working for windows OS.")
 args = parser.parse_args()
 
 # Instantiate all algorithms
 use_mono_depth = args.mono
 if args.s == "cam":
-    cam = Webcam()
+    cam = Webcam(sequential=not args.mp)
 else:
     cam = VideoInput(args.s)
 
