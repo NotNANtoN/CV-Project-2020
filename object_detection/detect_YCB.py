@@ -131,7 +131,7 @@ class YOLO(object):
         for i, detected_object in enumerate(zip(out_boxes, out_scores, out_classes)):
             max_score = 0
             print('Detected Object: {}, Bbox: {}, Confidence: {}'.format(
-                self.class_names[detected_object[2]], detected_object[0], detected_object[1]))
+                self.class_names[detected_object[2]], np.round(detected_object[0], 0), round(detected_object[1], 2)))
             if detected_object[2] == search_object_class and detected_object[1] > max_score:
                 max_score = detected_object[1]
                 search_object_index = i
