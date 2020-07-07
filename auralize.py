@@ -13,6 +13,7 @@ from video_input import VideoInput
 from object_detection.detect_YCB import YOLO
 from audio_playground.Audio import Audio
 from DenseDepth.monodepth import MonoDepth
+from bts_depth.bts.pytorch.bts_modular import BTS
 
 # Read intrinsic camera parameters, if none detected prompt calibration.
 try:
@@ -24,14 +25,14 @@ except FileNotFoundError:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", default="object_detection/input/video/ycb_seq1.mp4", type=str, help="Data source. Either cam or path to data.")
-parser.add_argument("--mono", default=0, type=int, help="Whether to use monocular depth estimation.")
+parser.add_argument("--mono", choices=["none", "mono", "bts"], default="none", help="Whether to use monocular depth estimation.")
 parser.add_argument("--mp", default=0, type=int, help="Whether to use multiprocessing for the camera input. Not working for windows OS.")
 parser.add_argument("--yolomodel", default=0, type=int, help="Whether to use YCB-model (0) or COCO (1).")
 parser.add_argument("--object", default=0, type=int, help="Which object to search for.")
 args = parser.parse_args()
 
 # Instantiate all algorithms
-use_mono_depth = args.mono
+use_mono_depth = args.mono != "none"
 if args.s == "cam":
     cam = Webcam(sequential=not args.mp)
 else:
@@ -41,7 +42,10 @@ yolo = YOLO(path_extension="object_detection", model=args.yolomodel)
 audio = Audio("audio_playground/sound.wav")
 
 if use_mono_depth:
-    depth_model = MonoDepth("DenseDepth/", parser=parser)
+    if args.mono == "mono":
+        depth_model = MonoDepth("DenseDepth/", parser=parser)
+    else:
+        depth_model = BTS(parser)
 
 # define initial object class to search for: 0 = meat can, 1 = banana, 2 = large marker 
 search_object_class = args.object
@@ -104,14 +108,28 @@ def process_frame(frame):
             #print("Time Depth Est: ", round(time.time() - start_time, 1))
             depth_map = depth_map.squeeze()
             # Upsample the depth map:
-            depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
-            #cv2.imshow("Depth image afterwards", depth_map)
+            if args.mono == "bts":
+                depth_map = depth_map.numpy()
+            else:
+                depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
+            #print("mean: ", depth_map.mean())
+            #print("std: ", depth_map.std())
+            #print("section: ", depth_map[:10, :10])
+            #print("depth map shape: ", depth_map.shape)
+            #cv2.imshow("Full depth image", depth_map)
+            # normalize depth map:
+            #depth_map = (depth_map - depth_map.min()) / (depth_map.max() - depth_map.min())
+            #cv2.imshow("Normed depth image", depth_map)
             # get distance by averaging over depth in depth_box
             distance = get_depth(depth_map, out_box)
             # scale distance for better volume behavior
             print("Distance before scaling: ", distance)
-            distance = max(distance - 0.05, 0) * 300
+            if args.mono == "bts":
+                distance = max(distance - 13, 0) * 0.3
+            else:
+                distance = max(distance - 0.05, 0) * 300
             object_position[2] = distance
+            print("Depth perception time: ", round(time.time() - start_time, 2))
         else:
             top, left, bottom, right = out_box
             # calc box area:
