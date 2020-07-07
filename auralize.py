@@ -80,6 +80,7 @@ def process_frame(frame):
     frame_np = np.array(frame)
     # First, calibrate the frame:
     frame_np = undistort_image(frame_np, camera_matrix, dist_coefs)
+    height, width = frame_np.shape[:2]
     frame_PIL = Image.fromarray(frame_np)
 
     # Feed camera feed into object detection algorithm to get bounding boxes
@@ -103,10 +104,19 @@ def process_frame(frame):
             #print("Time Depth Est: ", round(time.time() - start_time, 1))
             depth_map = depth_map.squeeze()
             # Upsample the depth map:
-            height, width = frame_np.shape[:2]
             depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
             #cv2.imshow("Depth image afterwards", depth_map)
             object_position[2] = get_depth(depth_map, out_box)
+        else:
+            top, left, bottom, right = out_box
+            # calc box area:
+            box_area = (top - bottom) * (left - right)
+            # get proportion to img:
+            proportion = box_area / (height * width)
+            # assign to distance: 
+            object_position[2] = 1 - proportion
+        print("Predicted distance: ", object_position[2])
+            
 
         #print("Object pos: ", object_position)
 
