@@ -9,6 +9,7 @@ class Audio():
         self.volume_factor = volume_factor
         self.pitch_factor = pitch_factor
         self.base_pitch = base_pitch
+        self.source.set_gain(2)
 
     def __del__(self):
         openal.oalQuit()

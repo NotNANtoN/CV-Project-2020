@@ -106,15 +106,26 @@ def process_frame(frame):
             # Upsample the depth map:
             depth_map = np.array(Image.fromarray(depth_map).resize((width, height)))
             #cv2.imshow("Depth image afterwards", depth_map)
-            object_position[2] = get_depth(depth_map, out_box)
+            # get distance by averaging over depth in depth_box
+            distance = get_depth(depth_map, out_box)
+            # scale distance for better volume behavior
+            print("Distance before scaling: ", distance)
+            distance = max(distance - 0.05, 0) * 300
+            object_position[2] = distance
         else:
             top, left, bottom, right = out_box
             # calc box area:
             box_area = (top - bottom) * (left - right)
             # get proportion to img:
             proportion = box_area / (height * width)
+            # get distance 
+            distance = 1 - proportion
+            # scale distance for better volume behavior
+            # (distance is in range 0.5-0.8, after scaling in 0-6)
+            print("Distance before scaling: ", distance)
+            distance = max((distance - 0.5), 0) * 20  
             # assign to distance: 
-            object_position[2] = 1 - proportion
+            object_position[2] = distance
         print("Predicted distance: ", object_position[2])
             
 
