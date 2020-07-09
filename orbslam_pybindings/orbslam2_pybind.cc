@@ -130,7 +130,11 @@ PYBIND11_MODULE(orbslam2, m) {
               "filename"_a)
             .def("GetTrackingState", &System::GetTrackingState)
             .def("GetTrackedMapPoints", &System::GetTrackedMapPoints)
-            .def("GetTrackedKeyPointsUn", &System::GetTrackedKeyPointsUn);
+            .def("GetTrackedKeyPointsUn", &System::GetTrackedKeyPointsUn)
+            .def("GetTrackedMapPointsPositions", &System::GetTrackedMapPointsPositions)
+            .def("GetTrackedKeyPointsUnPositions", &System::GetTrackedKeyPointsUnPositions)
+  //          .def("GetPoseInverse", &System::GetPoseInverse)
+            .def("GetScale", &System::GetScale);
 
     py::enum_<System::eSensor>(system, "eSensor")
         .value("MONOCULAR",System::eSensor::MONOCULAR)

@@ -122,6 +122,10 @@ public:
     int GetTrackingState();
     std::vector<MapPoint*> GetTrackedMapPoints();
     std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
+    std::vector<cv::Mat> GetTrackedMapPointsPositions();
+    std::vector<cv::Mat> GetTrackedKeyPointsUnPositions();
+//    cv::Mat GetPoseInverse();
+    float GetScale();
 
 private:
 

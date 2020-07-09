@@ -1,5 +1,6 @@
 keras==2.2.4
-tensorflow==1.15.2
+tensorflow==1.14
 PyOpenAl
 pillow
 opencv-python
+matplotlib
