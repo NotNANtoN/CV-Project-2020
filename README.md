@@ -10,7 +10,7 @@ objects seen from your webcam (currently only supports bananas), or you can call
 by default the system will choose a video from the YCB dataset. By passing a path to the `-s` argument you can also 
 test auralization of a different video.
 
-To build the OrbSLam2 bindings first make sure you have all requirements, mentionend in the ORB_SLAM2/README, file isntalled. Then switch to the ./orbslam_pybindings directory and execute the bash script make_pybindings.sh script. This should now build the whole C-Project as well as our bindings. The python module file is located in orbslam_pybindings/lib/ and can be imported by appending this path to the system path and then calling 'import orbslam2'. 
+To build the OrbSLam2 bindings first make sure you have all requirements, mentionend in the ORB_SLAM2/README, file installed. Then switch to the ./orbslam_pybindings directory and execute the bash script make_pybindings.sh script. This should now build the whole C-Project as well as our bindings. The python module file is located in orbslam_pybindings/lib/ and can be imported by appending this path to the system path and then calling 'import orbslam2'. 
 There is an additional test_tum.py file in the directory which you can use to test the bindings. You need to download the video files from https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_xyz.tgz and unpack this directory into the orbslam_pybindings/examples/ directory.
 
 ## General system
@@ -21,6 +21,12 @@ We have these main sub-systems to finally produce a 3D sound based on an image s
 3. Sound creation - given x,y,z coordinate play a 3D sound relative to the current position of the camera
 ### How to use:
 Run the `auralize.py` script. It will take the camera feed as an input and show as an input the observed image with marked objects, along with a stereo sound signal indicating the distance to the object.
+
+Use keys '1' and '2' to switch between objects. 'q' to quit.
+
+Weights for detection model (save to object_detection/keras_yolo3/model_data/):  
+YCB (~35MB): https://drive.google.com/open?id=1_5lbSga3Brws6N7y05s3FH8Q7gmfwFeU
+COCO (~35MB): https://drive.google.com/open?id=1nySoKfuXlDnYCsvqmPJzbvR-XB2jHSaj
 ### System evaluation:
 1. Speed: The faster the better. We need to evaluate how many FPS our system is required to be able to process to be useful.
 2. Accuracy: The more accurate the better if the system is still fast enough. Also here we need to find a way of how much inprecision in the x,y domain and in the depth domain is acceptable to still handle the target objects.
