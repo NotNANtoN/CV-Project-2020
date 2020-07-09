@@ -4,3 +4,6 @@ PyOpenAl
 pillow
 opencv-python
 matplotlib
+torch
+torchvision
+tqdm

@@ -14,6 +14,7 @@ from object_detection.detect_YCB import YOLO
 from audio_playground.Audio import Audio
 from DenseDepth.monodepth import MonoDepth
 from bts_depth.bts.pytorch.bts_modular import BTS
+from orbslam_pybindings.slam import ORBSLAM2
 
 # Read intrinsic camera parameters, if none detected prompt calibration.
 try:
@@ -29,6 +30,7 @@ parser.add_argument("--mono", choices=["none", "mono", "bts"], default="none", h
 parser.add_argument("--mp", default=0, type=int, help="Whether to use multiprocessing for the camera input. Not working for windows OS.")
 parser.add_argument("--yolomodel", default=0, type=int, help="Whether to use YCB-model (0) or COCO (1).")
 parser.add_argument("--object", default=0, type=int, help="Which object to search for.")
+parser.add_argument("--slam", default=0, type=int, help="Whether to use slam")
 args = parser.parse_args()
 
 # Instantiate all algorithms
@@ -46,6 +48,10 @@ if use_mono_depth:
         depth_model = MonoDepth("DenseDepth/", parser=parser)
     else:
         depth_model = BTS(parser)
+
+use_slam = args.slam
+if use_slam:
+    slam = ORBSLAM2(useViewer=False)
 
 # define initial object class to search for: 0 = meat can, 1 = banana, 2 = large marker
 search_object_class = args.object
@@ -81,7 +87,7 @@ def get_depth(depth_map, out_box):
     return pos_z
 
 def process_frame(frame):
-    frame_np = np.array(frame)
+    frame_np = np.array(Image.fromarray(frame))
     # First, calibrate the frame:
     frame_np = undistort_image(frame_np, camera_matrix, dist_coefs)
     height, width = frame_np.shape[:2]
@@ -91,6 +97,12 @@ def process_frame(frame):
     # Show bounding boxes in feed
     yolo_image, out_box = yolo.detect_image(frame_PIL, search_object_class)
     yolo_image = np.array(yolo_image)
+
+    if use_slam:
+        slam.track_monocular(frame, time.time())
+        print("slam pose estimation: {}".format(slam.pose))
+        if slam.initialized:
+            yolo_image = slam.draw_keypoints(yolo_image)
 
     cv2.imshow("Auralizer", yolo_image)
 
@@ -153,6 +165,10 @@ def process_frame(frame):
         # Feed camera feed into SLAM and get list of features with coordinates
         # Mark features that can be seen from current frame and that are within bounding box as relating to the object
         # Get coordinates of the feature group that is closest and/or has the highest density of detected features for the sought object
+
+        if use_slam:
+            if slam.initialized:
+                slam_object_position = slam.compute_object_position(out_box)
 
         # METHOD 3 -
         # Calculate center of detected bbox relative to camera center

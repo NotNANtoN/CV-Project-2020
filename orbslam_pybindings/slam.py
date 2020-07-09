@@ -37,25 +37,24 @@ class ORBSLAM2:
     def track_monocular(self, frame, timestamp):
         self.pose = self.system.TrackMonocular(frame, timestamp)
         trackingState = self.system.GetTrackingState()
-        if trackingState == 2 and not initialized:
-            initialized = True
-        elif initialized and slam.GetTrackingState() != 2:
-            initialized = False
-            last_tracked_object = None
-        if initialized:
-            scale = slam.GetScale()
-            tracked_map_points = np.squeeze(np.array(slam.GetTrackedMapPointsPositions())/scale)
-            tracked_key_points = np.squeeze(np.array(slam.GetTrackedKeyPointsUnPositions()))
-        return self.pose
+        if trackingState == 2 and not self.initialized:
+            self.initialized = True
+        elif self.initialized and trackingState != 2:
+            self.initialized = False
+            self.last_tracked_object = None
+        if self.initialized:
+            self.scale = self.system.GetScale()
+            self.tracked_map_points = np.squeeze(np.array(self.system.GetTrackedMapPointsPositions())/self.scale)
+            self.tracked_key_points = np.squeeze(np.array(self.system.GetTrackedKeyPointsUnPositions()))
 
     def point_inside_box(self, point, out_box):
-        top, left, bottom, right = out_boxes
+        top, left, bottom, right = out_box
         y,x = point
         return x >= left and x <= right and y >= top and y <= bottom
 
     def compute_object_position(self, out_box):
-        self.object_mappoints = np.array([mp for mp,kp in zip(self.tracked_map_points, self.tracked_key_points) if point_inside_box(kp, out_box)])
-        self.object_keypoints = np.array([kp for kp in self.tracked_key_points if point_inside_box(kp, out_box)])
+        self.object_mappoints = np.array([mp for mp,kp in zip(self.tracked_map_points, self.tracked_key_points) if self.point_inside_box(kp, out_box)])
+        self.object_keypoints = np.array([kp for kp in self.tracked_key_points if self.point_inside_box(kp, out_box)])
         self.last_tracked_object = np.append(np.average(self.object_mappoints, axis=0),[1])[None].T
         object_position = np.matmul(np.linalg.inv(self.pose), self.last_tracked_object)
         return np.squeeze(object_position[:-1])
@@ -63,6 +62,6 @@ class ORBSLAM2:
     def draw_keypoints(self, frame):
         frame = PIL.Image.fromarray(frame)
         draw = PIL.ImageDraw.Draw(frame)
-        for kp in self.object_keypoints:
+        for kp in self.tracked_key_points:
             draw.ellipse((kp[1] - 2, kp[0] - 2, kp[1] + 2, kp[0] + 2), fill = 'green')
-        return frame
+        return np.array(frame)
