@@ -35,7 +35,7 @@ class ORBSLAM2:
         self.tracked_map_points = []
 
     def track_monocular(self, frame, timestamp):
-        self.pose = self.system.TrackMonocular(frame, timestamp)
+        new_pose = self.system.TrackMonocular(frame, timestamp)
         trackingState = self.system.GetTrackingState()
         if trackingState == 2 and not self.initialized:
             self.initialized = True
@@ -43,13 +43,17 @@ class ORBSLAM2:
             self.initialized = False
             self.last_tracked_object = None
         if self.initialized:
+            if self.pose is None:
+                self.pose = new_pose
+            else:
+                self.pose *= new_pose
             self.scale = self.system.GetScale()
-            self.tracked_map_points = np.squeeze(np.array(self.system.GetTrackedMapPointsPositions())/self.scale)
+            self.tracked_map_points = np.squeeze(np.array(self.system.GetTrackedMapPointsPositions()))
             self.tracked_key_points = np.squeeze(np.array(self.system.GetTrackedKeyPointsUnPositions()))
 
     def point_inside_box(self, point, out_box):
         top, left, bottom, right = out_box
-        y,x = point
+        x,y = point
         return x >= left and x <= right and y >= top and y <= bottom
 
     def compute_object_position(self, out_box):
@@ -59,9 +63,13 @@ class ORBSLAM2:
         object_position = np.matmul(np.linalg.inv(self.pose), self.last_tracked_object)
         return np.squeeze(object_position[:-1])
 
+    def compute_last_tracked_object_position(self):
+        object_position = np.matmul(np.linalg.inv(self.pose), self.last_tracked_object)
+        return np.squeeze(object_position[:-1])
+
     def draw_keypoints(self, frame):
         frame = PIL.Image.fromarray(frame)
         draw = PIL.ImageDraw.Draw(frame)
         for kp in self.tracked_key_points:
-            draw.ellipse((kp[1] - 2, kp[0] - 2, kp[1] + 2, kp[0] + 2), fill = 'green')
+            draw.ellipse((kp[0] - 2, kp[1] - 2, kp[0] + 2, kp[1] + 2), fill = 'green')
         return np.array(frame)

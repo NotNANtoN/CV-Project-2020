@@ -169,6 +169,9 @@ def process_frame(frame):
         if use_slam:
             if slam.initialized:
                 slam_object_position = slam.compute_object_position(out_box)
+                print(object_position)
+                #if not use_mono_depth:
+                #    object_position[2] = slam_object_position[2]
 
         # METHOD 3 -
         # Calculate center of detected bbox relative to camera center
@@ -180,6 +183,13 @@ def process_frame(frame):
         audio.play()
         audio.set_position(object_position)
         print()
+    elif use_slam:
+        if slam.last_tracked_object is not None:
+            object_position = slam.compute_last_tracked_object_position()
+            print("Last tracked object: {}".format(object_position))
+            #audio.play()
+            #audio.set_position(object_position)
+            print()
 
 def clean_up():
     audio.__del__()
