@@ -103,6 +103,7 @@ def process_frame(frame):
         print("slam pose estimation: {}".format(slam.pose))
         if slam.initialized:
             yolo_image = slam.draw_keypoints(yolo_image)
+            print("Scale: {}".format(slam.scale))
 
     cv2.imshow("Auralizer", yolo_image)
 
@@ -166,12 +167,14 @@ def process_frame(frame):
         # Mark features that can be seen from current frame and that are within bounding box as relating to the object
         # Get coordinates of the feature group that is closest and/or has the highest density of detected features for the sought object
 
-        if use_slam:
-            if slam.initialized:
-                slam_object_position = slam.compute_object_position(out_box)
-                print(object_position)
-                #if not use_mono_depth:
-                #    object_position[2] = slam_object_position[2]
+        if use_slam and slam.initialized:
+            object_position = slam.compute_object_position(out_box)
+            print(object_position)
+            #if not use_mono_depth:
+            #    object_position[2] = slam_object_position[2]
+
+        audio.play()
+        audio.set_position(object_position)
 
         # METHOD 3 -
         # Calculate center of detected bbox relative to camera center
@@ -180,15 +183,13 @@ def process_frame(frame):
         # FINAL:
         # Give coordinate of object to auralizer to create sound.
 
-        audio.play()
-        audio.set_position(object_position)
         print()
     elif use_slam:
         if slam.last_tracked_object is not None:
             object_position = slam.compute_last_tracked_object_position()
             print("Last tracked object: {}".format(object_position))
-            #audio.play()
-            #audio.set_position(object_position)
+            audio.play()
+            audio.set_position(object_position)
             print()
 
 def clean_up():

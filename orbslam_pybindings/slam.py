@@ -8,7 +8,7 @@ import time
 import numpy as np
 import cv2
 import PIL
-sys.path.insert(0, "./orbslam_pybindings/lib/")
+sys.path.insert(0, "./ORB_SLAM2/lib/")
 base_dir = "./ORB_SLAM2/"
 from orbslam2 import System
 from orbslam2 import MapPoint
@@ -35,7 +35,7 @@ class ORBSLAM2:
         self.tracked_map_points = []
 
     def track_monocular(self, frame, timestamp):
-        new_pose = self.system.TrackMonocular(frame, timestamp)
+        self.pose = self.system.TrackMonocular(frame, timestamp)
         trackingState = self.system.GetTrackingState()
         if trackingState == 2 and not self.initialized:
             self.initialized = True
@@ -43,10 +43,6 @@ class ORBSLAM2:
             self.initialized = False
             self.last_tracked_object = None
         if self.initialized:
-            if self.pose is None:
-                self.pose = new_pose
-            else:
-                self.pose *= new_pose
             self.scale = self.system.GetScale()
             self.tracked_map_points = np.squeeze(np.array(self.system.GetTrackedMapPointsPositions()))
             self.tracked_key_points = np.squeeze(np.array(self.system.GetTrackedKeyPointsUnPositions()))

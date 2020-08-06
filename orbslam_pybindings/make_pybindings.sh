@@ -9,4 +9,3 @@ mkdir ../ORB_SLAM2/build
 cd ../ORB_SLAM2
 chmod +x ./build.sh
 ./build.sh
-mv ./lib/orbslam2.cpython-38-x86_64-linux-gnu.so ../orbslam_pybindings/lib/
