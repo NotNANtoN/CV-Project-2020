@@ -10,6 +10,7 @@ class Audio():
         self.pitch_factor = pitch_factor
         self.base_pitch = base_pitch
         self.source.set_gain(2)
+        self.source.set_source_relative(True)
 
     def __del__(self):
         openal.oalQuit()
@@ -32,9 +33,9 @@ class Audio():
         #print("Pitch angle: ", angle)
 
         pitch = self.base_pitch + position[1] * self.pitch_factor
-        #print("Setting pitch to: ", pitch)
-        self.source.set_pitch(float(pitch))
-        
+        print("Setting pitch to: ", pitch)
+        self.source.set_pitch(float(self.base_pitch))
+
         #print("Current pos and pitch: ", self.source.position, self.source.pitch)
 
     def mute(self):

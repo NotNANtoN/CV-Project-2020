@@ -41,7 +41,7 @@ else:
     cam = VideoInput(args.s)
 
 yolo = YOLO(path_extension="object_detection", model=args.yolomodel)
-audio = Audio("audio_playground/sound.wav")
+audio = Audio("audio_playground/sound.wav", volume_factor=0.1)
 
 if use_mono_depth:
     if args.mono == "mono":
@@ -115,7 +115,7 @@ def process_frame(frame):
         # METHOD 1 - Depth estimation:
         # Feed camera feed into monocular depth estimation algorithm and get depth map
         # Show depth map
-        if use_mono_depth:
+        if use_mono_depth and not use_slam:
             start_time = time.time()
             depth_map = depth_model.forward(frame_np)
             #print("Time Depth Est: ", round(time.time() - start_time, 1))
@@ -169,7 +169,7 @@ def process_frame(frame):
 
         if use_slam and slam.initialized:
             object_position = slam.compute_object_position(out_box)
-            print(object_position)
+            print("Object position: ", object_position)
             #if not use_mono_depth:
             #    object_position[2] = slam_object_position[2]
 
@@ -190,6 +190,9 @@ def process_frame(frame):
             print("Last tracked object: {}".format(object_position))
             audio.play()
             audio.set_position(object_position)
+            print()
+        else:
+            audio.stop()
             print()
 
 def clean_up():
@@ -214,4 +217,5 @@ while True:
             search_object_class += 1
 
         search_object_class = search_object_class % (num_classes - 1)
+        #slam.last_tracked_object = None
         audio.stop()
