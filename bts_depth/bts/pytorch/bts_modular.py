@@ -23,7 +23,8 @@ def convert_arg_line_to_args(arg_line):
         yield arg
 
 def define_parser(parser):
-    #parser = argparse.ArgumentParser(description='BTS PyTorch implementation.', fromfile_prefix_chars='@')
+    if parser is None:
+    parser = argparse.ArgumentParser(description='BTS PyTorch implementation.', fromfile_prefix_chars='@')
     parser.convert_arg_line_to_args = convert_arg_line_to_args
 
     parser.add_argument('--model_name', type=str, help='model name', default='bts_nyu_v2')

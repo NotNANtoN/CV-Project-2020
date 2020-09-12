@@ -96,10 +96,10 @@ class PoseDataset(data.Dataset):
         print(len(self.list))
         
     def __getitem__(self, index):
-        img = np.array(Image.open(f'{self.root}/{self.list[index]}-color.png'))
-        depth = np.array(Image.open('{0}/{1}-depth.png'.format(self.root, self.list[index])))
-        label = np.array(Image.open('{0}/{1}-label.png'.format(self.root, self.list[index]))) 
-        meta = scio.loadmat('{0}/{1}-meta.mat'.format(self.root, self.list[index]))
+        img = np.array(Image.open(f'{self.root}/data/{self.list[index]}-color.png'))
+        depth = np.array(Image.open('{0}/data/{1}-depth.png'.format(self.root, self.list[index])))
+        label = np.array(Image.open('{0}/data/{1}-label.png'.format(self.root, self.list[index]))) 
+        meta = scio.loadmat('{0}/data/{1}-meta.mat'.format(self.root, self.list[index]))
         
         if self.list[index][:8] != 'data_syn' and int(self.list[index][5:9]) >= 60:
             cam_cx = self.cam_cx_2
