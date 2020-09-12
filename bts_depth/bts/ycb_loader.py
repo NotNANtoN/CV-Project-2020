@@ -17,11 +17,11 @@ import scipy.io as scio
 
 class PoseDataset(data.Dataset):
     def __init__(self, mode, num_pt=1000, add_noise=False, noise_trans=0.0, refine=False):
-        base_path = '/data_b/YCB_Video_Dataset/dataset_config/'
+        base_path = '/data_b/YCB_Video_Dataset/image_sets/'
         if mode == 'train':
-            self.path = f'{base_path}train_data_list.txt'
+            self.path = f'{base_path}train.txt' #train_data_list.txt'
         elif mode == 'test':
-            self.path = f'{base_path}test_data_list.txt'
+            self.path = f'{base_path}val.txt'#test_data_list.txt'
         self.num_pt = num_pt
         self.root = '/data_b/YCB_Video_Dataset'
         self.add_noise = add_noise
