@@ -55,7 +55,7 @@ def read_args(parser):
 # sys.path.append(model_dir)
 
 
-class BTS:
+class BTS(torch.nn.Module):
     def __init__(self, parser):
         # set args
         parser = define_parser(parser)

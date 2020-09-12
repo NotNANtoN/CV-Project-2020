@@ -5,7 +5,7 @@ ds = PoseDataset(mode="test") # mode = train / test
 
 img, depth, label, calibrate_params = ds[0]
 
-print(len(ds), img.shape, depth.shape, label, calibrate_params)
+print(len(ds), img.shape, depth.shape, label.shape, calibrate_params)
 
 parser = None
 depth_model = BTS(parser)
