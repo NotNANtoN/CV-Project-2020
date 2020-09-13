@@ -57,6 +57,7 @@ def read_args(parser):
 
 class BTS(torch.nn.Module):
     def __init__(self, parser):
+        super().__init__()
         # set args
         parser = define_parser(parser)
         args = read_args(parser)
@@ -82,13 +83,16 @@ class BTS(torch.nn.Module):
     def forward(self, x):
         if not torch.is_tensor(x):
             x = torch.tensor(x)
-        if x.shape[-1] == 3:
-            x = x.permute(2, 0, 1)
+        #if x.shape[-1] == 3:
+        #    x = x.permute(2, 0, 1)
         if x.ndim == 3:
             x = x.view(1, *list(x.shape))
+        if x.shape[-1] == 3:
+            x = x.permute(0, 3, 1, 2)
         x = x.to(self.device).float()
-        factor = np.random.random() * 5000
-        print("Factor: ", factor)
+        #factor = np.random.random() * 5000
+        #print("Factor: ", factor)
+        factor = 1
         lpg8x8, lpg4x4, lpg2x2, reduc1x1, depth_est = self.model(x, factor, self.device)
         return depth_est
         

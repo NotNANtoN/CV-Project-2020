@@ -96,10 +96,12 @@ class PoseDataset(data.Dataset):
         print(len(self.list))
         
     def __getitem__(self, index):
-        img = np.array(Image.open(f'{self.root}/data/{self.list[index]}-color.png'))
-        depth = np.array(Image.open('{0}/data/{1}-depth.png'.format(self.root, self.list[index])))
-        label = np.array(Image.open('{0}/data/{1}-label.png'.format(self.root, self.list[index]))) 
-        meta = scio.loadmat('{0}/data/{1}-meta.mat'.format(self.root, self.list[index]))
+        folder = self.list[index]
+        path = os.path.join(self.root, 'data', folder)
+        img = np.array(Image.open(f'{path}-color.png'))
+        depth = np.array(Image.open(f'{path}-depth.png'))
+        label = np.array(Image.open(f'{path}-label.png')) 
+        meta = scio.loadmat(f'{path}-meta.mat')
         
         if self.list[index][:8] != 'data_syn' and int(self.list[index][5:9]) >= 60:
             cam_cx = self.cam_cx_2
@@ -112,7 +114,7 @@ class PoseDataset(data.Dataset):
             cam_fx = self.cam_fx_1
             cam_fy = self.cam_fy_1
             
-        return img, depth, label, (cam_cx, cam_cy, cam_fx, cam_fy)
+        return img, depth, label, (cam_cx, cam_cy, cam_fx, cam_fy), folder
     
 
     def __getitem___complex(self, index):
