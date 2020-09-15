@@ -72,14 +72,13 @@ class BTS(torch.nn.Module):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         checkpoint = torch.load(args.checkpoint_path, map_location=torch.device(self.device))
         self.model.load_state_dict(checkpoint['model'])
-        self.model.eval()
         # to cuda if possible
         self.model.to(self.device)
+        self.model.eval()
         
-        factor = 1# 518.8579
+        factor = 1 # 518.8579
         self.focal = torch.tensor(factor).to(self.device).float()  # For NYU
         
-    @torch.no_grad()
     def forward(self, x):
         if not torch.is_tensor(x):
             x = torch.tensor(x)

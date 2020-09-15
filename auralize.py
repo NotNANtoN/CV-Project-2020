@@ -48,6 +48,7 @@ if use_mono_depth:
         depth_model = MonoDepth("DenseDepth/", parser=parser)
     else:
         depth_model = BTS(parser)
+    depth_model.eval()
 
 use_slam = args.slam
 if use_slam:
