@@ -55,8 +55,17 @@ def read_args(parser):
 # sys.path.append(model_dir)
 
 
+
+class WrappedModel(nn.Module):
+	def __init__(self, args):
+		super(WrappedModel, self).__init__()
+		self.module = BtsModel(params=args) # that I actually define.
+	def forward(self, *args, **kwargs):
+		return self.module(*args, **kwargs)
+
+
 class BTS(torch.nn.Module):
-    def __init__(self, parser,args=None):
+    def __init__(self, parser,args=None, dataparallel=True):
         super().__init__()
         # set args
         if args is None:
@@ -69,11 +78,18 @@ class BTS(torch.nn.Module):
         model_dir = os.path.dirname(args.checkpoint_path)
         sys.path.append(model_dir)
         # init model
-        self.model = BtsModel(params=args)
-        self.model = torch.nn.DataParallel(self.model)
+        #self.model = BtsModel(params=args)
+        self.model = WrappedModel(args)
+        if dataparallel:
+            self.model = torch.nn.DataParallel(self.model)
+        
         # load weights
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        checkpoint = torch.load(args.checkpoint_path, map_location=torch.device(self.device))
+        if dataparallel:
+            checkpoint = torch.load(args.checkpoint_path, map_location=torch.device(self.device))
+        else:
+            checkpoint = torch.load(args.checkpoint_path, map_location={"cuda" : "cpu"})
+            
         self.model.load_state_dict(checkpoint['model'])
         # to cuda if possible
         self.model.to(self.device)
