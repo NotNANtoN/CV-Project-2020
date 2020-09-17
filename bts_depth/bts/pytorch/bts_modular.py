@@ -22,7 +22,7 @@ def convert_arg_line_to_args(arg_line):
             continue
         yield arg
 
-def define_parser(parser):
+def define_parser(parser=None):
     if parser is None:
         parser = argparse.ArgumentParser()
     parser.convert_arg_line_to_args = convert_arg_line_to_args
@@ -56,11 +56,14 @@ def read_args(parser):
 
 
 class BTS(torch.nn.Module):
-    def __init__(self, parser):
+    def __init__(self, parser,args=None):
         super().__init__()
         # set args
-        parser = define_parser(parser)
-        args = read_args(parser)
+        if args is None:
+            parser = define_parser(parser)
+            args = read_args(parser)
+        else:
+            args = args
         args.mode = 'test'
         # add model dir to path
         model_dir = os.path.dirname(args.checkpoint_path)

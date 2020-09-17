@@ -28,15 +28,14 @@ import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
+
+import torchvision.transforms as transforms
 
 import matplotlib
 import matplotlib.cm
 import threading
 from tqdm import tqdm
-
-from bts import BtsModel
-from bts_dataloader import *
 
 
 def convert_arg_line_to_args(arg_line):
@@ -56,10 +55,10 @@ def get_args():
                                                                         'resnet101_bts, resnet50_bts, resnext50_bts or resnext101_bts',
                                                                    default='densenet161_bts')
     # Dataset
-    parser.add_argument('--dataset',                   type=str,   help='dataset to train on, kitti or nyu', default='nyu')
-    parser.add_argument('--data_path',                 type=str,   help='path to the data', required=True)
-    parser.add_argument('--gt_path',                   type=str,   help='path to the groundtruth data', required=True)
-    parser.add_argument('--filenames_file',            type=str,   help='path to the filenames text file', required=True)
+    #parser.add_argument('--dataset',                   type=str,   help='dataset to train on, kitti or nyu', default='nyu')
+    #parser.add_argument('--data_path',                 type=str,   help='path to the data', required=True)
+    #parser.add_argument('--gt_path',                   type=str,   help='path to the groundtruth data', required=True)
+    #parser.add_argument('--filenames_file',            type=str,   help='path to the filenames text file', required=True)
     parser.add_argument('--input_height',              type=int,   help='input height', default=480)
     parser.add_argument('--input_width',               type=int,   help='input width',  default=640)
     parser.add_argument('--max_depth',                 type=float, help='maximum depth in estimation', default=10)
@@ -119,7 +118,7 @@ def get_args():
         args = parser.parse_args([arg_filename_with_prefix])
     else:
         args = parser.parse_args()
-    return args
+    return args, parser
 
 
 inv_normalize = transforms.Normalize(
@@ -275,7 +274,7 @@ def online_eval(model, dataloader_eval, gpu, ngpus):
     return None
 
 
-def main_worker(args, parser):
+def main_worker(args):
     args.gpu = 0
     ngpus_per_node = 1
 
@@ -285,8 +284,7 @@ def main_worker(args, parser):
 
     # Create model
     from bts_modular import BTS
-    model = BTS(parser)
-    #model = BtsModel(args)
+    model = BTS(None, args=args)
     model.train()
 
 
@@ -455,4 +453,4 @@ def main_worker(args, parser):
 
 if __name__ == '__main__':
     args, parser = get_args()
-    main_worker(args, parser)
+    main_worker(args)
